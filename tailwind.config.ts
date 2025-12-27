@@ -9,49 +9,49 @@ const config: Config = {
     theme: {
         extend: {
             colors: {
-                // User defined palette
-                background: '#F8F9FA',
+                // High Contrast Palette
+                background: '#F1F5F9', // Slate-100
                 primary: {
-                    DEFAULT: '#FF6B6B', // Coral Red
-                    50: '#fff1f1',
-                    100: '#ffdfdf',
-                    200: '#ffc5c5',
-                    300: '#ff9d9d',
-                    400: '#ff6b6b',
-                    500: '#fa4545',
-                    600: '#e52828',
-                    700: '#c21b1b',
-                    800: '#a01b1b',
-                    900: '#841d1d',
+                    DEFAULT: '#E11D48', // Rose-600
+                    50: '#fff1f2',
+                    100: '#ffe4e6',
+                    200: '#fecdd3',
+                    300: '#fda4af',
+                    400: '#fb7185',
+                    500: '#f43f5e',
+                    600: '#e11d48', // Base
+                    700: '#be123c',
+                    800: '#9f1239',
+                    900: '#881337',
                     foreground: '#ffffff',
                 },
                 secondary: {
-                    DEFAULT: '#2C3E50', // Navy Slate
-                    50: '#f4f6f7',
-                    100: '#e3e7eb',
-                    200: '#c5d0d8',
-                    300: '#9cadbc',
-                    400: '#72889c',
-                    500: '#566d82',
-                    600: '#435669',
-                    700: '#364554',
-                    800: '#2c3e50', // Base
-                    900: '#263442',
+                    DEFAULT: '#0F172A', // Slate-900
+                    50: '#f8fafc',
+                    100: '#f1f5f9',
+                    200: '#e2e8f0',
+                    300: '#cbd5e1',
+                    400: '#94a3b8',
+                    500: '#64748b',
+                    600: '#475569',
+                    700: '#334155',
+                    800: '#1e293b',
+                    900: '#0f172a', // Base
                     foreground: '#ffffff',
                 },
                 accent: {
-                    DEFAULT: '#F1C40F', // Golden Yellow
-                    50: '#fefce8',
-                    100: '#fef9c3',
-                    200: '#fef08a',
-                    300: '#fde047',
-                    400: '#facc15',
-                    500: '#eab308',
-                    600: '#ca8a04',
-                    700: '#a16207',
-                    800: '#854d0e',
-                    900: '#713f12',
-                    foreground: '#2C3E50',
+                    DEFAULT: '#F59E0B', // Amber-500
+                    50: '#fffbeb',
+                    100: '#fef3c7',
+                    200: '#fde68a',
+                    300: '#fcd34d',
+                    400: '#fbbf24',
+                    500: '#f59e0b',
+                    600: '#d97706',
+                    700: '#b45309',
+                    800: '#92400e',
+                    900: '#78350f',
+                    foreground: '#0F172A',
                 }
             },
             fontFamily: {

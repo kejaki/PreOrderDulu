@@ -122,16 +122,25 @@ export default function Home() {
                         </div>
                         <div className="flex flex-col">
                             <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Antar ke</span>
-                            <span className="text-sm font-bold text-gray-900 truncate max-w-[150px]">{locationAddress}</span>
+                            <span className="text-sm font-bold text-secondary-DEFAULT truncate max-w-[150px]">{locationAddress}</span>
                         </div>
                     </div>
-                    <Link href="/merchant/login" className="p-2 bg-white rounded-full text-gray-600 hover:bg-gray-100 transition-colors shadow-sm">
-                        <User size={20} />
-                    </Link>
+                    <div className="flex items-center gap-2">
+                        <Link
+                            href="/order/lookup"
+                            className="px-3 py-2 bg-primary-DEFAULT text-white rounded-xl font-bold text-sm shadow-md hover:bg-primary-700 transition-all flex items-center gap-1.5 active:scale-95"
+                        >
+                            <Search size={16} />
+                            Cek Pesanan
+                        </Link>
+                        <Link href="/merchant/login" className="p-2 bg-white border border-gray-200 rounded-full text-secondary-DEFAULT hover:bg-gray-100 transition-colors shadow-sm">
+                            <User size={20} />
+                        </Link>
+                    </div>
                 </div>
 
                 <div className="mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900 leading-tight">
+                    <h2 className="text-2xl font-bold text-secondary-DEFAULT leading-tight">
                         Mau makan apa<br />hari ini?
                     </h2>
                 </div>
