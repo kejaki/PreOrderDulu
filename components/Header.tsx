@@ -21,10 +21,11 @@ export function Header() {
                 <div className="flex items-center gap-3">
                     <Link
                         href="/order/lookup"
-                        className="p-2 bg-gray-50 text-slate-700 rounded-full hover:bg-gray-100 transition-colors"
+                        className="px-3 py-2 bg-gray-50 text-slate-700 rounded-full hover:bg-gray-100 transition-colors flex items-center gap-2 font-medium text-xs md:text-sm"
                         title="Lacak Pesanan"
                     >
-                        <Bike size={20} />
+                        <Bike size={18} />
+                        <span>Lacak Pesanan</span>
                     </Link>
                 </div>
             </div>
