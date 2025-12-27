@@ -7,6 +7,7 @@ import { getCurrentLocation } from '@/lib/geolocation';
 import MerchantCard from '@/components/MerchantCard';
 import { CartButton } from '@/components/CartButton';
 import { HomeBanner } from '@/components/HomeBanner';
+import { MenuRecommendationSlider } from '@/components/MenuRecommendationSlider';
 import { Skeleton } from '@/components/ui/Skeleton';
 import {
     Search,
@@ -163,9 +164,6 @@ export default function Home() {
                     </div>
                 </div>
 
-                import {MenuRecommendationSlider} from '@/components/MenuRecommendationSlider';
-
-                // ...
 
                 {/* Promo Carousel */}
                 <HomeBanner />
