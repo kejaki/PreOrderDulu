@@ -146,11 +146,6 @@ export default function Home() {
                     </h2>
                 </div>
 
-                import {HomeBanner} from '@/components/HomeBanner';
-
-                // ... (imports)
-
-                // ... (inside component)
 
                 {/* Sticky Search Bar */}
                 <div className="sticky top-4 z-40 mb-6 transition-colors">
