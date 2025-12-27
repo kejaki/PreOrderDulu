@@ -145,6 +145,12 @@ export default function Home() {
                     </h2>
                 </div>
 
+                import {HomeBanner} from '@/components/HomeBanner';
+
+                // ... (imports)
+
+                // ... (inside component)
+
                 {/* Sticky Search Bar */}
                 <div className="sticky top-4 z-40 mb-6 transition-colors">
                     <div className="relative group">
@@ -160,6 +166,9 @@ export default function Home() {
                         />
                     </div>
                 </div>
+
+                {/* Promo Carousel */}
+                <HomeBanner />
 
                 {/* Categories - High Contrast Chips */}
                 <div className="mb-8 overflow-x-auto pb-4 scrollbar-hide">
