@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { Calendar, Download, ArrowLeft, Search, FileSpreadsheet } from 'lucide-react';
+import { Calendar, Download, ArrowLeft, Search, FileSpreadsheet, ChevronDown, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { downloadFinancialReport } from '@/utils/generateExcel';
+import { downloadPDFReport } from '@/utils/generatePDF';
 import toast from 'react-hot-toast';
 
 export default function TransactionHistoryPage() {
@@ -72,13 +73,16 @@ export default function TransactionHistoryPage() {
         setIsLoading(false);
     };
 
-    const handleExport = async () => {
+    const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
+
+    const handleExportExcel = async () => {
         if (transactions.length === 0) {
             toast.error('Tidak ada data untuk diekspor');
             return;
         }
 
         setIsExporting(true);
+        setIsExportDropdownOpen(false);
         try {
             await downloadFinancialReport(
                 transactions,
@@ -86,10 +90,33 @@ export default function TransactionHistoryPage() {
                 new Date(startDate),
                 new Date(endDate)
             );
-            toast.success('Laporan berhasil diunduh!');
+            toast.success('Laporan Excel berhasil diunduh!');
         } catch (error) {
             console.error(error);
             toast.error('Gagal membuat laporan Excel');
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
+    const handleExportPDF = async () => {
+        if (transactions.length === 0) {
+            toast.error('Tidak ada data untuk diekspor');
+            return;
+        }
+
+        setIsExporting(true);
+        setIsExportDropdownOpen(false);
+        try {
+            downloadPDFReport(
+                transactions,
+                merchant?.merchant_name || 'Merchant',
+                `${format(new Date(startDate), 'dd MMM yyyy', { locale: id })} - ${format(new Date(endDate), 'dd MMM yyyy', { locale: id })}`
+            );
+            toast.success('Laporan PDF berhasil diunduh!');
+        } catch (error) {
+            console.error(error);
+            toast.error('Gagal membuat laporan PDF');
         } finally {
             setIsExporting(false);
         }
@@ -147,20 +174,62 @@ export default function TransactionHistoryPage() {
                                 Rp {totalRevenue.toLocaleString('id-ID')}
                             </div>
                         </div>
-                        <Button
-                            onClick={handleExport}
-                            disabled={isLoading || transactions.length === 0 || isExporting}
-                            className="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white"
-                        >
-                            {isExporting ? (
-                                'Memproses...'
-                            ) : (
-                                <>
-                                    <FileSpreadsheet size={18} className="mr-2" />
-                                    Export Laporan (.xlsx)
-                                </>
+                        <div className="relative">
+                            <Button
+                                onClick={() => setIsExportDropdownOpen(!isExportDropdownOpen)}
+                                disabled={isLoading || transactions.length === 0 || isExporting}
+                                className="w-full md:w-auto bg-primary-600 hover:bg-primary-700 text-white min-w-[180px] justify-between"
+                            >
+                                {isExporting ? (
+                                    <span className="flex items-center"><Download className="animate-bounce mr-2" size={18} /> Memproses...</span>
+                                ) : (
+                                    <>
+                                        <span className="flex items-center"><Download size={18} className="mr-2" /> Export Laporan</span>
+                                        <ChevronDown size={16} className={`ml-2 transition-transform ${isExportDropdownOpen ? 'rotate-180' : ''}`} />
+                                    </>
+                                )}
+                            </Button>
+
+                            {/* Dropdown Menu */}
+                            {isExportDropdownOpen && (
+                                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                                    <div className="p-1">
+                                        <button
+                                            onClick={handleExportExcel}
+                                            className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-green-50 hover:text-green-700 rounded-lg transition-colors text-left"
+                                        >
+                                            <div className="mr-3 bg-green-100 p-1.5 rounded-lg text-green-600">
+                                                <FileSpreadsheet size={18} />
+                                            </div>
+                                            <div>
+                                                <div className="font-medium">Download Excel</div>
+                                                <div className="text-[10px] text-slate-400">Format .xlsx spreadsheet</div>
+                                            </div>
+                                        </button>
+                                        <button
+                                            onClick={handleExportPDF}
+                                            className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors text-left"
+                                        >
+                                            <div className="mr-3 bg-red-100 p-1.5 rounded-lg text-red-600">
+                                                <FileText size={18} />
+                                            </div>
+                                            <div>
+                                                <div className="font-medium">Download PDF</div>
+                                                <div className="text-[10px] text-slate-400">Format .pdf dokumen</div>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
                             )}
-                        </Button>
+
+                            {/* Click Outside Overlay */}
+                            {isExportDropdownOpen && (
+                                <div
+                                    className="fixed inset-0 z-40 bg-transparent"
+                                    onClick={() => setIsExportDropdownOpen(false)}
+                                />
+                            )}
+                        </div>
                     </div>
                 </div>
 
