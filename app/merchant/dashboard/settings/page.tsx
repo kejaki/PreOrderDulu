@@ -205,9 +205,6 @@ export default function MerchantSettingsPage() {
                                         <Input
                                             name="opening_hours"
                                             className="pl-9"
-                                        <Input
-                                            name="opening_hours"
-                                            className="pl-9"
                                             value={formData.opening_hours}
                                             onChange={handleChange}
                                             placeholder="08:00 - 21:00"
