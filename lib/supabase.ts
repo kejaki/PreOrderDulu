@@ -42,6 +42,19 @@ export interface MenuItem {
     is_available: boolean;
     photo_url?: string;
     category?: string;
+    categories?: string[]; // Multi-category tags
+    options?: MenuOption[]; // Variants/Add-ons
+}
+
+export interface MenuOption {
+    name: string; // e.g., "Level Pedas"
+    required: boolean;
+    choices: MenuChoice[];
+}
+
+export interface MenuChoice {
+    label: string; // e.g., "Level 1"
+    price: number; // Additional price (0 if no extra charge)
 }
 
 export interface Order {
