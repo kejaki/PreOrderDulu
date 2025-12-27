@@ -25,7 +25,7 @@ export interface Merchant {
     emergency_contact_relation?: string;
     profile_photo_url?: string;
     business_description?: string;
-    distance_meters?: number; // Added by RPC function
+    distance_meters?: number;
     rating_average?: number;
     rating_count?: number;
 }
@@ -116,11 +116,6 @@ export async function getMerchantsBySearch(query: string, userLat: number, userL
         console.error('Error searching merchants:', error);
         return [];
     }
-
-    // Since we aren't using the RPC, we don't get 'distance_meters' from DB.
-    // We can rely on the client calculating it, or return it here if we want to sort.
-    // The Home component handles mapping, but let's check if it needs 'distance_meters'.
-    // The Merchant interface has optional distance_meters.
 
     return data as Merchant[];
 }
