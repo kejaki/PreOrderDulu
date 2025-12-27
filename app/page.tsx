@@ -163,33 +163,15 @@ export default function Home() {
                     </div>
                 </div>
 
+                import {MenuRecommendationSlider} from '@/components/MenuRecommendationSlider';
+
+                // ...
+
                 {/* Promo Carousel */}
                 <HomeBanner />
 
-                {/* Categories - High Contrast Chips */}
-                <div className="mb-8 overflow-x-auto pb-4 scrollbar-hide">
-                    <div className="flex gap-3 w-max px-1">
-                        {CATEGORIES.map((cat) => {
-                            const isActive = selectedCategory === cat.id;
-                            return (
-                                <button
-                                    key={cat.id}
-                                    onClick={() => setSelectedCategory(cat.id)}
-                                    className={`
-                                        flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap
-                                        ${isActive
-                                            ? 'bg-primary-DEFAULT text-white shadow-md scale-105'
-                                            : 'bg-white border border-gray-200 text-slate-700 shadow-sm hover:border-gray-300'
-                                        }
-                                    `}
-                                >
-                                    <cat.icon size={18} className={isActive ? 'text-white' : 'text-slate-500'} />
-                                    {cat.label}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
+                {/* Menu Recommendations */}
+                <MenuRecommendationSlider />
             </div>
 
             {/* Merchant List */}
