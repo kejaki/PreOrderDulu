@@ -1,0 +1,97 @@
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import type { MenuItem } from '@/lib/supabase';
+
+interface CartItem extends MenuItem {
+    quantity: number;
+    merchantId: string;
+    merchantName: string;
+}
+
+interface CartState {
+    items: CartItem[];
+    merchantId: string | null;
+    merchantName: string | null;
+    addItem: (item: MenuItem, merchantId: string, merchantName: string) => void;
+    removeItem: (itemId: string) => void;
+    updateQuantity: (itemId: string, quantity: number) => void;
+    clearCart: () => void;
+    getTotal: () => number;
+    getItemCount: () => number;
+}
+
+export const useCartStore = create<CartState>()(
+    persist(
+        (set, get) => ({
+            items: [],
+            merchantId: null,
+            merchantName: null,
+
+            addItem: (item, merchantId, merchantName) => {
+                const { items, merchantId: currentMerchantId } = get();
+
+                // If cart has items from different merchant, clear it
+                if (currentMerchantId && currentMerchantId !== merchantId) {
+                    if (!confirm('Your cart contains items from another merchant. Clear cart and add this item?')) {
+                        return;
+                    }
+                    set({ items: [], merchantId: null, merchantName: null });
+                }
+
+                const existingItem = items.find((i) => i.id === item.id);
+
+                if (existingItem) {
+                    set({
+                        items: items.map((i) =>
+                            i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+                        ),
+                    });
+                } else {
+                    set({
+                        items: [...items, { ...item, quantity: 1, merchantId, merchantName }],
+                        merchantId,
+                        merchantName,
+                    });
+                }
+            },
+
+            removeItem: (itemId) => {
+                const { items } = get();
+                const newItems = items.filter((i) => i.id !== itemId);
+                set({
+                    items: newItems,
+                    merchantId: newItems.length > 0 ? get().merchantId : null,
+                    merchantName: newItems.length > 0 ? get().merchantName : null,
+                });
+            },
+
+            updateQuantity: (itemId, quantity) => {
+                if (quantity <= 0) {
+                    get().removeItem(itemId);
+                    return;
+                }
+
+                set({
+                    items: get().items.map((i) =>
+                        i.id === itemId ? { ...i, quantity } : i
+                    ),
+                });
+            },
+
+            clearCart: () => {
+                set({ items: [], merchantId: null, merchantName: null });
+            },
+
+            getTotal: () => {
+                return get().items.reduce((total, item) => total + item.price * item.quantity, 0);
+            },
+
+            getItemCount: () => {
+                return get().items.reduce((count, item) => count + item.quantity, 0);
+            },
+        }),
+        {
+            name: 'cart-storage',
+        }
+    )
+);
