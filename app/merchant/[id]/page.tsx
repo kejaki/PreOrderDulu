@@ -11,6 +11,7 @@ import { MapPin, ArrowLeft, Star, Plus } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { MerchantReviews } from '@/components/MerchantReviews';
 
 export default function MerchantDetailPage() {
     const params = useParams();
@@ -185,6 +186,11 @@ export default function MerchantDetailPage() {
                         <p>No menu items available yet.</p>
                     </div>
                 )}
+            </div>
+
+            {/* Reviews Section */}
+            <div className="max-w-3xl mx-auto px-4 py-8 border-t border-slate-100">
+                <MerchantReviews merchantId={merchant.id} />
             </div>
 
             <CartButton />

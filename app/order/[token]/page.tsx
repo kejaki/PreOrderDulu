@@ -3,15 +3,17 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { MessageCircle, Check, ChefHat, Bike, PackageCheck } from 'lucide-react';
+import { MessageCircle, Check, ChefHat, Bike, PackageCheck, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { ReviewModal } from '@/components/ReviewModal';
 
 export default function OrderTrackingPage() {
     const params = useParams();
     const token = params.token as string;
     const [order, setOrder] = useState<any | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isReviewOpen, setIsReviewOpen] = useState(false);
 
     useEffect(() => {
         if (!token) return;
@@ -153,9 +155,31 @@ export default function OrderTrackingPage() {
                 </div>
             </div>
 
+            {/* Review Button - Only show if completed */}
+            {order.status === 'completed' && (
+                <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                    <button
+                        onClick={() => setIsReviewOpen(true)}
+                        className="w-full flex items-center justify-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-yellow-950 font-bold py-3 rounded-xl transition-colors"
+                    >
+                        <Star size={20} className="fill-yellow-950" />
+                        Beri Ulasan / Review
+                    </button>
+                </div>
+            )}
+
             <Link href="/" className="block text-center text-gray-400 text-sm py-4 hover:text-primary-DEFAULT transition-colors">
                 Back to Home
             </Link>
+
+            {order.merchants && (
+                <ReviewModal
+                    isOpen={isReviewOpen}
+                    onClose={() => setIsReviewOpen(false)}
+                    merchantId={order.merchants.id}
+                    orderId={order.id}
+                />
+            )}
         </motion.div>
     );
 }
