@@ -78,6 +78,11 @@ export function DashboardStats({ stats, isLoading }: DashboardStatsProps) {
                     <div className="text-xl md:text-2xl font-bold text-slate-900 truncate">
                         {card.value}
                     </div>
+                    {card.label === 'Selesai Hari Ini' && (
+                        <a href="/merchant/dashboard/history" className="text-xs text-blue-600 font-bold hover:underline mt-2 inline-block">
+                            Lihat Semua &gt;
+                        </a>
+                    )}
                 </motion.div>
             ))}
         </div>

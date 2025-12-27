@@ -11,6 +11,8 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
     "date-fns": "^4.1.0",
+    "exceljs": "^4.4.0",
+    "file-saver": "^2.0.5",
     "framer-motion": "^12.23.26",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.344.0",
@@ -24,6 +26,7 @@
     "zustand": "^4.4.7"
   },
   "devDependencies": {
+    "@types/file-saver": "^2.0.7",
     "@types/leaflet": "^1.9.8",
     "@types/node": "^20",
     "@types/react": "^18",
