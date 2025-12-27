@@ -1,13 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase, type MenuItem, type Merchant } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { LogOut, Plus, Power, Package, ChefHat, Bike, CheckCircle, XCircle, Store, Coffee } from 'lucide-react';
+import {
+    LogOut, Plus, Power, Package, ChefHat, Bike,
+    CheckCircle, XCircle, Store, Coffee, Image as ImageIcon,
+    Trash2, Loader2, Save, X
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function MerchantDashboard() {
@@ -16,11 +20,10 @@ export default function MerchantDashboard() {
     const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'orders' | 'menu'>('orders');
 
-    // Load Merchant Profile
     useEffect(() => {
         async function loadSession() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
                 router.push('/merchant/login');
                 return;
             }
@@ -28,11 +31,12 @@ export default function MerchantDashboard() {
             const { data: merchantData, error } = await supabase
                 .from('merchants')
                 .select('*')
-                .eq('id', session.user.id)
+                .eq('id', user.id)
                 .single();
 
             if (error || !merchantData) {
                 console.error('Merchant load error:', error);
+                // If merchant record doesn't exist, maybe it's not a merchant or signup failed
                 return;
             }
 
@@ -42,11 +46,10 @@ export default function MerchantDashboard() {
         loadSession();
     }, [router]);
 
-    // Toggle Store Status
     const toggleStatus = async () => {
         if (!merchant) return;
         const newStatus = !merchant.is_open;
-        setMerchant({ ...merchant, is_open: newStatus }); // Optimistic
+        setMerchant({ ...merchant, is_open: newStatus });
         await supabase.from('merchants').update({ is_open: newStatus }).eq('id', merchant.id);
     };
 
@@ -80,7 +83,13 @@ export default function MerchantDashboard() {
                         </div>
                         <div>
                             <h1 className="text-xl font-bold text-secondary-900 leading-none">{merchant.merchant_name}</h1>
-                            <p className="text-xs text-secondary-500 font-medium">Dashboard</p>
+                            <div className="flex items-center gap-2 mt-1">
+                                {merchant.is_verified ? (
+                                    <Badge size="sm" variant="success" className="text-[10px]">Verified Account</Badge>
+                                ) : (
+                                    <Badge size="sm" variant="warning" className="text-[10px]">Pending Verification</Badge>
+                                )}
+                            </div>
                         </div>
 
                         <div
@@ -184,7 +193,6 @@ function OrdersView({ merchantId }: { merchantId: string }) {
 
     return (
         <div className="space-y-8">
-            {/* Pending Section */}
             <section>
                 <div className="flex items-center gap-3 mb-4">
                     <span className="bg-yellow-100 text-yellow-700 p-2 rounded-lg"><Package size={24} /></span>
@@ -206,7 +214,6 @@ function OrdersView({ merchantId }: { merchantId: string }) {
                 </div>
             </section>
 
-            {/* Active Section */}
             <section>
                 <div className="flex items-center gap-3 mb-4">
                     <span className="bg-blue-100 text-blue-700 p-2 rounded-lg"><ChefHat size={24} /></span>
@@ -235,7 +242,7 @@ function OrderCard({ order, onUpdateStatus, isPending = false }: { order: any, o
             exit={{ opacity: 0, scale: 0.9 }}
             className={`
                 bg-white rounded-2xl p-5 shadow-sm border-l-4 overflow-hidden relative
-                ${isPending ? 'border-l-yellow-400' : 'border-l-primary-DEFAULT'}
+                ${isPending ? 'border-l-yellow-400 font-bold' : 'border-l-primary-DEFAULT'}
             `}
         >
             <div className="flex justify-between items-start mb-4">
@@ -285,38 +292,28 @@ function OrderCard({ order, onUpdateStatus, isPending = false }: { order: any, o
 
 function MenuView({ merchantId }: { merchantId: string }) {
     const [items, setItems] = useState<MenuItem[]>([]);
-    const [isAdding, setIsAdding] = useState(false);
-    const [newItem, setNewItem] = useState({ name: '', price: '', description: '', category: '' });
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
-        async function fetchMenu() {
-            const { data } = await supabase.from('menu_items').select('*').eq('merchant_id', merchantId).order('created_at');
-            if (data) setItems(data as MenuItem[]);
-        }
         fetchMenu();
     }, [merchantId]);
+
+    const fetchMenu = async () => {
+        const { data } = await supabase.from('menu_items').select('*').eq('merchant_id', merchantId).order('created_at');
+        if (data) setItems(data as MenuItem[]);
+    };
 
     const toggleAvailability = async (id: string, current: boolean) => {
         setItems(items.map(i => i.id === id ? { ...i, is_available: !current } : i));
         await supabase.from('menu_items').update({ is_available: !current }).eq('id', id);
     };
 
-    const addItem = async () => {
-        if (!newItem.name || !newItem.price) return;
-        const { data } = await supabase.from('menu_items').insert({
-            merchant_id: merchantId,
-            item_name: newItem.name,
-            price: parseInt(newItem.price),
-            description: newItem.description,
-            category: newItem.category || 'Other',
-            is_available: true
-        }).select().single();
-
-        if (data) {
-            setItems([...items, data as MenuItem]);
-            setIsAdding(false);
-            setNewItem({ name: '', price: '', description: '', category: '' });
-        }
+    const handleDelete = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this item?')) return;
+        setItems(items.filter(i => i.id !== id));
+        await supabase.from('menu_items').delete().eq('id', id);
     };
 
     return (
@@ -326,60 +323,265 @@ function MenuView({ merchantId }: { merchantId: string }) {
                     <span className="bg-orange-100 text-orange-700 p-2 rounded-lg"><Coffee size={24} /></span>
                     <h2 className="text-xl font-bold text-secondary-900">Menu Management</h2>
                 </div>
-                <Button onClick={() => setIsAdding(!isAdding)}>
+                <Button onClick={() => { setEditingItem(null); setIsModalOpen(true); }}>
                     <Plus size={18} className="mr-2" /> Add New Item
                 </Button>
             </div>
 
-            <AnimatePresence>
-                {isAdding && (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {items.map(item => (
                     <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="bg-white p-6 rounded-2xl shadow-lg mb-6 border border-primary-100 overflow-hidden"
+                        layout
+                        key={item.id}
+                        className={`bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col transition-all ${!item.is_available ? 'opacity-70 grayscale' : 'border-secondary-100 hover:shadow-md'}`}
                     >
-                        <h3 className="font-bold mb-4 text-primary-DEFAULT">Add New Menu Item</h3>
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <Input label="Name" placeholder="e.g. Nasi Goreng" value={newItem.name} onChange={e => setNewItem({ ...newItem, name: e.target.value })} />
-                            <Input label="Price" type="number" placeholder="15000" value={newItem.price} onChange={e => setNewItem({ ...newItem, price: e.target.value })} />
-                            <Input label="Category" placeholder="e.g. Makanan Berat" value={newItem.category} onChange={e => setNewItem({ ...newItem, category: e.target.value })} />
-                            <Input label="Description" placeholder="Description..." value={newItem.description} onChange={e => setNewItem({ ...newItem, description: e.target.value })} />
+                        <div className="relative h-40 bg-secondary-100 overflow-hidden">
+                            {item.photo_url ? (
+                                <img src={item.photo_url} alt={item.item_name} className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-secondary-400">
+                                    <ImageIcon size={48} />
+                                </div>
+                            )}
+                            <div className="absolute top-2 right-2 flex gap-1">
+                                <button
+                                    onClick={() => { setEditingItem(item); setIsModalOpen(true); }}
+                                    className="p-1.5 bg-white/90 rounded-lg text-secondary-600 hover:text-primary-DEFAULT shadow-sm"
+                                >
+                                    <ChefHat size={16} />
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(item.id)}
+                                    className="p-1.5 bg-white/90 rounded-lg text-secondary-600 hover:text-red-500 shadow-sm"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
                         </div>
-                        <div className="flex justify-end gap-3 mt-6">
-                            <Button variant="secondary" onClick={() => setIsAdding(false)}>Cancel</Button>
-                            <Button onClick={addItem}>Save & Publish</Button>
+
+                        <div className="p-5 flex-1 flex flex-col">
+                            <div className="flex justify-between items-start mb-2">
+                                <h3 className="font-bold text-secondary-900 text-lg leading-tight">{item.item_name}</h3>
+                                <Badge variant="info" size="sm" className="bg-secondary-100 text-secondary-600 border-secondary-200">{item.category}</Badge>
+                            </div>
+                            <p className="text-sm text-secondary-500 mb-4 line-clamp-2">{item.description || 'No description provided.'}</p>
+
+                            <div className="flex items-center justify-between mt-auto pt-4 border-t border-secondary-50">
+                                <span className="font-bold text-primary-DEFAULT text-lg">Rp {item.price.toLocaleString()}</span>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-xs font-medium text-secondary-400">
+                                        {item.is_available ? 'Available' : 'Sold Out'}
+                                    </span>
+                                    <button
+                                        onClick={() => toggleAvailability(item.id, item.is_available)}
+                                        className={`
+                                            w-10 h-5 rounded-full transition-colors relative
+                                            ${item.is_available ? 'bg-green-500' : 'bg-secondary-300'}
+                                        `}
+                                    >
+                                        <motion.div
+                                            animate={{ x: item.is_available ? 20 : 2 }}
+                                            className="w-4 h-4 bg-white rounded-full absolute top-0.5"
+                                        />
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </motion.div>
-                )}
-            </AnimatePresence>
-
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {items.map(item => (
-                    <div key={item.id} className={`bg-white p-5 rounded-2xl shadow-sm border transition-all ${!item.is_available ? 'opacity-60 border-secondary-100 bg-secondary-50' : 'border-secondary-200 hover:border-primary-300 hover:shadow-md'}`}>
-                        <div className="flex justify-between items-start mb-3">
-                            <h3 className="font-bold text-secondary-900 text-lg leading-tight">{item.item_name}</h3>
-                            <Badge variant="info" size="sm" className="bg-secondary-100 text-secondary-600 border-secondary-200">{item.category}</Badge>
-                        </div>
-                        <p className="text-sm text-secondary-500 mb-4 line-clamp-2 min-h-[40px]">{item.description || 'No description'}</p>
-                        <div className="flex items-center justify-between mt-auto">
-                            <span className="font-bold text-primary-DEFAULT text-lg">Rp {item.price.toLocaleString()}</span>
-                            <button
-                                onClick={() => toggleAvailability(item.id, item.is_available)}
-                                className={`
-                                   p-2 rounded-lg transition-colors
-                                   ${item.is_available
-                                        ? 'text-green-600 bg-green-50 hover:bg-green-100'
-                                        : 'text-secondary-400 bg-secondary-100 hover:bg-secondary-200'}
-                                `}
-                                title="Toggle Availability"
-                            >
-                                {item.is_available ? <CheckCircle size={20} /> : <XCircle size={20} />}
-                            </button>
-                        </div>
-                    </div>
                 ))}
             </div>
+
+            <MenuModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSave={fetchMenu}
+                initialData={editingItem}
+                merchantId={merchantId}
+            />
         </div>
+    );
+}
+
+interface MenuModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSave: () => void;
+    initialData: MenuItem | null;
+    merchantId: string;
+}
+
+function MenuModal({ isOpen, onClose, onSave, initialData, merchantId }: MenuModalProps) {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [formData, setFormData] = useState({
+        item_name: '',
+        price: '',
+        description: '',
+        category: '',
+    });
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        if (initialData) {
+            setFormData({
+                item_name: initialData.item_name,
+                price: initialData.price.toString(),
+                description: initialData.description || '',
+                category: initialData.category || '',
+            });
+            setImagePreview(initialData.photo_url || null);
+        } else {
+            setFormData({ item_name: '', price: '', description: '', category: '' });
+            setImagePreview(null);
+            setImageFile(null);
+        }
+    }, [initialData, isOpen]);
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => setImagePreview(reader.result as string);
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleSave = async () => {
+        if (!formData.item_name || !formData.price) return;
+        setIsLoading(true);
+
+        try {
+            let photo_url = imagePreview;
+
+            // Upload image if new file selected
+            if (imageFile) {
+                const fileExt = imageFile.name.split('.').pop();
+                const fileName = `${merchantId}/${Date.now()}.${fileExt}`;
+                const { error: uploadError } = await supabase.storage
+                    .from('food-images')
+                    .upload(fileName, imageFile, { upsert: true });
+
+                if (uploadError) throw uploadError;
+
+                const { data } = supabase.storage.from('food-images').getPublicUrl(fileName);
+                photo_url = data.publicUrl;
+            }
+
+            const payload = {
+                merchant_id: merchantId,
+                item_name: formData.item_name,
+                price: parseInt(formData.price),
+                description: formData.description,
+                category: formData.category || 'General',
+                photo_url: photo_url,
+                is_available: true
+            };
+
+            if (initialData) {
+                await supabase.from('menu_items').update(payload).eq('id', initialData.id);
+            } else {
+                await supabase.from('menu_items').insert(payload);
+            }
+
+            onSave();
+            onClose();
+        } catch (err) {
+            console.error(err);
+            alert('Failed to save menu item');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <AnimatePresence>
+            {isOpen && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={onClose}
+                        className="fixed inset-0 bg-secondary-900/60 backdrop-blur-sm"
+                    />
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                        className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden relative z-10"
+                    >
+                        <div className="p-6 border-b border-secondary-100 flex justify-between items-center">
+                            <h3 className="text-xl font-bold text-secondary-900">
+                                {initialData ? 'Edit Menu Item' : 'Add New Menu Item'}
+                            </h3>
+                            <button onClick={onClose} className="p-2 hover:bg-secondary-50 rounded-full transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="p-6 space-y-5">
+                            {/* Image Upload */}
+                            <div className="flex flex-col items-center">
+                                <div
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="w-full h-40 bg-secondary-50 rounded-2xl border-2 border-dashed border-secondary-200 flex flex-col items-center justify-center cursor-pointer hover:border-primary-300 hover:bg-primary-50 transition-all overflow-hidden"
+                                >
+                                    {imagePreview ? (
+                                        <img src={imagePreview} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <>
+                                            <ImageIcon className="text-secondary-300 mb-2" size={40} />
+                                            <span className="text-sm font-medium text-secondary-500">Upload Food Photo</span>
+                                        </>
+                                    )}
+                                </div>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    hidden
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                />
+                                {imagePreview && (
+                                    <button
+                                        onClick={() => { setImagePreview(null); setImageFile(null); }}
+                                        className="mt-2 text-xs text-red-500 font-bold hover:underline"
+                                    >
+                                        Remove Photo
+                                    </button>
+                                )}
+                            </div>
+
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div className="md:col-span-2">
+                                    <Input label="Name" placeholder="e.g. Nasi Goreng Spesial" value={formData.item_name} onChange={e => setFormData({ ...formData, item_name: e.target.value })} />
+                                </div>
+                                <Input label="Price (Rp)" type="number" placeholder="25000" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} />
+                                <Input label="Category" placeholder="e.g. Makanan Berat" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} />
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-bold text-secondary-900 mb-2">Description</label>
+                                    <textarea
+                                        className="w-full px-4 py-3 bg-secondary-50 border-none rounded-xl focus:ring-2 focus:ring-primary-DEFAULT resize-none text-sm"
+                                        rows={3}
+                                        placeholder="Briefly describe your food..."
+                                        value={formData.description}
+                                        onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-6 bg-secondary-50 flex gap-3">
+                            <Button variant="secondary" className="flex-1" onClick={onClose} disabled={isLoading}>Cancel</Button>
+                            <Button className="flex-1" onClick={handleSave} isLoading={isLoading}>
+                                {initialData ? 'Update Item' : 'Create Item'}
+                            </Button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+        </AnimatePresence>
     );
 }
