@@ -60,18 +60,18 @@ export default function MerchantCard({ merchant, distance }: MerchantCardProps) 
                         </div>
                     </div>
 
-                    <p className="text-secondary-500 text-sm line-clamp-1 mb-2">
+                    <p className="text-secondary-600 text-sm line-clamp-1 mb-2">
                         {merchant.business_description || 'No description available'}
                     </p>
 
-                    <div className="flex flex-wrap gap-2 text-xs text-secondary-400">
+                    <div className="flex flex-wrap gap-2 text-xs text-secondary-500 font-medium">
                         {merchant.merchant_type === 'student' && (
-                            <span className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">
+                            <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
                                 Student
                             </span>
                         )}
-                        <span className="flex items-center gap-1">
-                            <Clock size={12} /> 15-20 min
+                        <span className="flex items-center gap-1 text-secondary-600">
+                            <Clock size={12} className="text-primary-400" /> 15-20 min
                         </span>
                     </div>
                 </div>

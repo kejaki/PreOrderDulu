@@ -91,7 +91,7 @@ export default function Home() {
             <header className="bg-white sticky top-0 z-30 shadow-sm border-b border-secondary-100">
                 <div className="max-w-md mx-auto px-4 py-4 space-y-4">
 
-                    {/* Top Bar: Brand & Location */}
+                    {/* Top Bar: Brand & Action Links */}
                     <div className="flex justify-between items-center">
                         <motion.h1
                             whileHover={{ scale: 1.05 }}
@@ -100,27 +100,35 @@ export default function Home() {
                             PreOrder<span className="text-secondary-900">Dulu</span>
                         </motion.h1>
 
-                        <Link href="/merchant/register" className="text-xs font-semibold text-secondary-500 hover:text-primary-DEFAULT transition-colors">
-                            Jadi Mitra?
-                        </Link>
+                        <div className="flex items-center gap-4">
+                            <Link href="/merchant/login" className="text-sm font-bold text-secondary-900 hover:text-primary-DEFAULT transition-colors">
+                                Login
+                            </Link>
+                            <Link
+                                href="/merchant/register"
+                                className="px-4 py-1.5 bg-secondary-900 text-white text-xs font-bold rounded-full hover:bg-secondary-800 transition-all shadow-md active:scale-95"
+                            >
+                                Jadi Mitra
+                            </Link>
+                        </div>
                     </div>
 
                     {/* Location Bar */}
-                    <div className="flex items-center gap-2 text-sm text-secondary-600 bg-secondary-50 p-2 rounded-lg">
+                    <div className="flex items-center gap-2 text-sm text-secondary-900 bg-secondary-50 p-2 rounded-xl border border-secondary-100/50">
                         <MapPin size={16} className="text-primary-DEFAULT shrink-0" />
-                        <span className="truncate flex-1">{locationAddress}</span>
-                        <button onClick={() => window.location.reload()} className="p-1 hover:bg-secondary-200 rounded">
+                        <span className="truncate flex-1 font-medium">{locationAddress}</span>
+                        <button onClick={() => window.location.reload()} className="p-1 hover:bg-secondary-100 rounded-lg text-secondary-400">
                             <Navigation size={14} />
                         </button>
                     </div>
 
                     {/* Search */}
                     <div className="relative">
-                        <Search className="absolute left-3 top-3 text-secondary-400" size={20} />
+                        <Search className="absolute left-4 top-3.5 text-secondary-400" size={18} />
                         <input
                             type="text"
                             placeholder="Cari makan apa hari ini?"
-                            className="w-full pl-10 pr-4 py-3 bg-secondary-50 border-none rounded-2xl focus:ring-2 focus:ring-primary-DEFAULT transition-all font-medium text-secondary-900 placeholder:text-secondary-400"
+                            className="w-full pl-11 pr-4 py-3.5 bg-secondary-50 border-none rounded-2xl focus:ring-2 focus:ring-primary-DEFAULT transition-all font-medium text-secondary-900 placeholder:text-secondary-400 shadow-inner"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -133,10 +141,10 @@ export default function Home() {
                                 key={filter}
                                 onClick={() => setActiveFilter(filter as any)}
                                 className={`
-                  px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all
+                  px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all
                   ${activeFilter === filter
                                         ? 'bg-primary-DEFAULT text-white shadow-lg shadow-primary-500/30'
-                                        : 'bg-white border border-secondary-200 text-secondary-600 hover:bg-secondary-50'}
+                                        : 'bg-white border border-secondary-200 text-secondary-900 hover:bg-secondary-50'}
                 `}
                             >
                                 {filter === 'all' ? 'Semua' : `< ${filter}`}
