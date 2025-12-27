@@ -200,7 +200,7 @@ export default function TransactionHistoryPage() {
                                             </td>
                                             <td className="px-6 py-4 font-medium text-slate-900">
                                                 {t.guest_name}
-                                                <Badge variant="secondary" className="ml-2 text-[10px]">
+                                                <Badge variant="default" className="ml-2 text-[10px] bg-slate-100 text-slate-700 hover:bg-slate-200">
                                                     {t.order_type === 'delivery' ? 'Deliv' : 'Pick'}
                                                 </Badge>
                                             </td>
