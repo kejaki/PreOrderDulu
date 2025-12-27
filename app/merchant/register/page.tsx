@@ -136,10 +136,10 @@ export default function MerchantRegisterPage() {
                 return;
             }
 
-            // 2. Create merchant record
+            // 2. Create/Update merchant record (using upsert in case trigger already created it)
             const { data: merchant, error: merchantError } = await supabase
                 .from('merchants')
-                .insert({
+                .upsert({
                     id: authData.user.id,
                     merchant_name: formData.merchantName,
                     merchant_type: formData.merchantType,
@@ -152,6 +152,8 @@ export default function MerchantRegisterPage() {
                     emergency_contact_name: formData.merchantType === 'student' ? formData.emergencyContactName : null,
                     emergency_contact_phone: formData.merchantType === 'student' ? formData.emergencyContactPhone : null,
                     emergency_contact_relation: formData.merchantType === 'student' ? formData.emergencyContactRelation : null,
+                    is_verified: false, // Default to false for new profiles
+                    verification_status: 'pending'
                 })
                 .select()
                 .single();

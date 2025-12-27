@@ -267,3 +267,44 @@ CREATE TRIGGER update_menu_items_updated_at BEFORE
 UPDATE ON menu_items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_orders_updated_at BEFORE
 UPDATE ON orders FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- ============================================
+-- AUTOMATIC MERCHANT PROFILE TRIGGER
+-- ============================================
+-- This trigger creates a skeleton merchant record 
+-- when a user signs up in Supabase Auth.
+CREATE OR REPLACE FUNCTION public.handle_new_merchant() RETURNS TRIGGER AS $$ BEGIN -- We check the 'role' metadata we sent from the registration form
+    IF (new.raw_user_meta_data->>'role' = 'merchant') THEN
+INSERT INTO public.merchants (
+        id,
+        merchant_name,
+        merchant_type,
+        email,
+        phone,
+        latitude,
+        longitude,
+        address_text
+    )
+VALUES (
+        new.id,
+        COALESCE(
+            new.raw_user_meta_data->>'full_name',
+            'New Merchant'
+        ),
+        'general',
+        -- Default
+        new.email,
+        '000',
+        -- Placeholder to be updated by form
+        0,
+        -- Placeholder
+        0,
+        -- Placeholder
+        'Address to be updated' -- Placeholder
+    );
+END IF;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+CREATE OR REPLACE TRIGGER on_auth_user_created
+AFTER
+INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_merchant();
