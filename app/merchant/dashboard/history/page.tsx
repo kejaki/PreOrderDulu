@@ -111,7 +111,8 @@ export default function TransactionHistoryPage() {
             downloadPDFReport(
                 transactions,
                 merchant?.merchant_name || 'Merchant',
-                `${format(new Date(startDate), 'dd MMM yyyy', { locale: id })} - ${format(new Date(endDate), 'dd MMM yyyy', { locale: id })}`
+                new Date(startDate),
+                new Date(endDate)
             );
             toast.success('Laporan PDF berhasil diunduh!');
         } catch (error) {
