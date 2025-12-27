@@ -108,7 +108,6 @@ export default function CheckoutPage() {
         }
     }, [merchant, formData.latitude, formData.longitude, orderType]);
 
-    const subtotal = getTotal();
     const totalAmount = subtotal + deliveryFee;
 
     const handleSubmit = async () => {
