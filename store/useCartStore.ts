@@ -13,12 +13,14 @@ interface CartState {
     items: CartItem[];
     merchantId: string | null;
     merchantName: string | null;
+    orderType: 'delivery' | 'pickup';
     addItem: (item: MenuItem, merchantId: string, merchantName: string) => void;
     removeItem: (itemId: string) => void;
     updateQuantity: (itemId: string, quantity: number) => void;
     incrementItem: (itemId: string) => void;
     decrementItem: (itemId: string) => void;
     updateNote: (itemId: string, notes: string) => void;
+    setOrderType: (type: 'delivery' | 'pickup') => void;
     clearCart: () => void;
     getTotal: () => number;
     getItemCount: () => number;
@@ -30,6 +32,7 @@ export const useCartStore = create<CartState>()(
             items: [],
             merchantId: null,
             merchantName: null,
+            orderType: 'delivery',
 
             addItem: (item, merchantId, merchantName) => {
                 const { items, merchantId: currentMerchantId } = get();
@@ -112,6 +115,10 @@ export const useCartStore = create<CartState>()(
                         i.id === itemId ? { ...i, notes } : i
                     ),
                 });
+            },
+
+            setOrderType: (type) => {
+                set({ orderType: type });
             },
 
             clearCart: () => {
