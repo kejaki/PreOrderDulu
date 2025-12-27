@@ -6,7 +6,7 @@ import { supabase, type Merchant } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { LogOut, Power, Calendar, Store } from 'lucide-react';
+import { LogOut, Power, Calendar, Store, Settings } from 'lucide-react';
 import { DashboardStats } from '@/components/merchant/DashboardStats';
 import { RevenueChart } from '@/components/merchant/RevenueChart';
 import { MenuPerformance } from '@/components/merchant/MenuPerformance';
@@ -181,6 +181,11 @@ export default function MerchantDashboard() {
                                 <Calendar size={16} />
                                 {format(date, 'd MMMM yyyy', { locale: id })}
                             </div>
+
+                            <Button variant="secondary" size="sm" onClick={() => router.push('/merchant/dashboard/settings')} className="mr-2">
+                                <Settings size={16} className="md:mr-2" />
+                                <span className="hidden md:inline">Settings</span>
+                            </Button>
 
                             <Button variant="secondary" size="sm" onClick={() => { supabase.auth.signOut(); router.push('/merchant/login'); }}>
                                 <LogOut size={16} className="md:mr-2" />

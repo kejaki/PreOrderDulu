@@ -19,7 +19,7 @@ export default function MerchantSettingsPage() {
         id: '',
         merchant_name: '',
         profile_photo_url: '',
-        banner_url: '', // Note: DB schema might not have banner_url, if not I should add or skip. 
+        banner_url: '',
         // Checked schema: merchants -> profile_photo_url exists. banner_url does NOT exist in schema I read.
         // I will assume for now I should only update profile_photo_url OR I need to add column.
         // User request: "Profile Image & Banner Upload".
@@ -32,9 +32,7 @@ export default function MerchantSettingsPage() {
         business_description: '',
         phone: '',
         address_text: '',
-        opening_hours: '', // This also doesn't exist in 001_initial_schema. 
-        // I will store opening hours in a new column or metadata? 
-        // Let's check if I can add these columns in the migration 009.
+        opening_hours: '',
     });
 
     // NOTE: I realize now I need to add columns `banner_url` and `opening_hours` to `merchants` table.
@@ -69,7 +67,7 @@ export default function MerchantSettingsPage() {
                 business_description: data.business_description || '',
                 phone: data.phone || '',
                 address_text: data.address_text || '',
-                opening_hours: data.opening_hours || '', // Potential error
+                opening_hours: data.opening_hours || '',
             });
         }
         setIsLoading(false);
@@ -90,9 +88,8 @@ export default function MerchantSettingsPage() {
                     business_description: formData.business_description,
                     phone: formData.phone,
                     address_text: formData.address_text,
-                    // Additional fields if I add them
-                    // banner_url: formData.banner_url,
-                    // opening_hours: formData.opening_hours
+                    banner_url: formData.banner_url,
+                    opening_hours: formData.opening_hours
                 })
                 .eq('id', formData.id);
 
@@ -145,10 +142,15 @@ export default function MerchantSettingsPage() {
 
                             {/* Banner - Placeholder since column might not exist yet */}
                             <div className="flex-1 w-full">
-                                <span className="text-sm font-medium text-slate-700 mb-3 block">Banner Toko (Coming Soon)</span>
-                                <div className="aspect-video bg-slate-100 rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-400">
-                                    <span className="text-xs">Banner Upload requires DB Update</span>
-                                </div>
+                                <span className="text-sm font-medium text-slate-700 mb-3 block">Banner Toko (16:9)</span>
+                                <ImageUpload
+                                    label="Upload Banner"
+                                    bucket="merchants"
+                                    aspectRatio="video"
+                                    value={formData.banner_url}
+                                    onChange={(url) => setFormData(prev => ({ ...prev, banner_url: url }))}
+                                    className="w-full text-slate-400"
+                                />
                             </div>
                         </div>
                     </div>
@@ -203,10 +205,12 @@ export default function MerchantSettingsPage() {
                                         <Input
                                             name="opening_hours"
                                             className="pl-9"
-                                            // value={formData.opening_hours} 
-                                            // onChange={handleChange} 
+                                        <Input
+                                            name="opening_hours"
+                                            className="pl-9"
+                                            value={formData.opening_hours}
+                                            onChange={handleChange}
                                             placeholder="08:00 - 21:00"
-                                            disabled // Disabled until DB migration
                                         />
                                     </div>
                                 </div>
