@@ -22,14 +22,9 @@ export function Header() {
                     <Link
                         href="/order/lookup"
                         className="p-2 bg-gray-50 text-slate-700 rounded-full hover:bg-gray-100 transition-colors"
+                        title="Lacak Pesanan"
                     >
-                        <Search size={20} />
-                    </Link>
-                    <Link
-                        href="/merchant/login"
-                        className="p-2 bg-gray-50 text-slate-700 rounded-full hover:bg-gray-100 transition-colors"
-                    >
-                        <User size={20} />
+                        <Bike size={20} />
                     </Link>
                 </div>
             </div>

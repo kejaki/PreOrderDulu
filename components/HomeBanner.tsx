@@ -75,11 +75,18 @@ export function HomeBanner() {
                     <div className="relative z-10 w-full">
                         <h2 className="text-2xl font-bold mb-1">Kamu Jago Masak?</h2>
                         <p className="text-slate-200 text-sm mb-4 max-w-[80%]">Buka toko online-mu sekarang. Gratis & verifikasi cepat.</p>
-                        <Link href="/merchant/register">
-                            <button className="bg-white text-slate-900 px-5 py-2 rounded-full font-bold text-sm shadow-md flex items-center gap-2 hover:bg-slate-100 transition-colors">
-                                Daftar Mitra <ChevronRight size={16} />
-                            </button>
-                        </Link>
+                        <div className="flex gap-3">
+                            <Link href="/merchant/register">
+                                <button className="bg-white text-slate-900 px-5 py-2 rounded-full font-bold text-sm shadow-md flex items-center gap-2 hover:bg-slate-100 transition-colors">
+                                    Daftar Mitra <ChevronRight size={16} />
+                                </button>
+                            </Link>
+                            <Link href="/merchant/login">
+                                <button className="bg-slate-800/50 backdrop-blur-sm text-white border border-white/20 px-5 py-2 rounded-full font-bold text-sm hover:bg-slate-800/70 transition-colors">
+                                    Masuk
+                                </button>
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </motion.div>
