@@ -117,13 +117,13 @@ export async function getNearbyMerchants(lat: number, lng: number, maxDistanceMe
 }
 
 export async function getMerchantsBySearch(query: string, userLat: number, userLng: number) {
-    const { data, error } = await supabase
-        .from('merchants')
-        .select('*')
-        .eq('is_open', true)
-        .eq('is_verified', true)
-        .or(`merchant_name.ilike.%${query}%,business_description.ilike.%${query}%,address_text.ilike.%${query}%`)
-        .limit(20);
+    // Call the new RPC function that searches both merchants and menu items
+    const { data, error } = await supabase.rpc('search_merchants_and_menus', {
+        p_lat: userLat,
+        p_lng: userLng,
+        p_search_text: query,
+        p_radius_meters: 5000 // Default 5km radius
+    });
 
     if (error) {
         console.error('Error searching merchants:', error);
