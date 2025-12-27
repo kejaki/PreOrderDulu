@@ -21,10 +21,10 @@ export default function MerchantDashboard() {
     const [date, setDate] = useState(new Date());
 
     // Data States
-    const [stats, setStats] = useState(null);
-    const [weeklyRevenue, setWeeklyRevenue] = useState([]);
-    const [topProducts, setTopProducts] = useState([]);
-    const [orders, setOrders] = useState([]);
+    const [stats, setStats] = useState<any>(null);
+    const [weeklyRevenue, setWeeklyRevenue] = useState<any[]>([]);
+    const [topProducts, setTopProducts] = useState<any[]>([]);
+    const [orders, setOrders] = useState<any[]>([]);
 
     useEffect(() => {
         loadSession();
