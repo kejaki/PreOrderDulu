@@ -6,6 +6,7 @@ interface CartItem extends MenuItem {
     quantity: number;
     merchantId: string;
     merchantName: string;
+    notes?: string;
 }
 
 interface CartState {
@@ -15,6 +16,9 @@ interface CartState {
     addItem: (item: MenuItem, merchantId: string, merchantName: string) => void;
     removeItem: (itemId: string) => void;
     updateQuantity: (itemId: string, quantity: number) => void;
+    incrementItem: (itemId: string) => void;
+    decrementItem: (itemId: string) => void;
+    updateNote: (itemId: string, notes: string) => void;
     clearCart: () => void;
     getTotal: () => number;
     getItemCount: () => number;
@@ -74,6 +78,38 @@ export const useCartStore = create<CartState>()(
                 set({
                     items: get().items.map((i) =>
                         i.id === itemId ? { ...i, quantity } : i
+                    ),
+                });
+            },
+
+            incrementItem: (itemId) => {
+                const { items } = get();
+                set({
+                    items: items.map((i) =>
+                        i.id === itemId ? { ...i, quantity: i.quantity + 1 } : i
+                    ),
+                });
+            },
+
+            decrementItem: (itemId) => {
+                const { items } = get();
+                const item = items.find((i) => i.id === itemId);
+                if (item && item.quantity > 1) {
+                    set({
+                        items: items.map((i) =>
+                            i.id === itemId ? { ...i, quantity: i.quantity - 1 } : i
+                        ),
+                    });
+                } else {
+                    // If quantity is 1, remove the item
+                    get().removeItem(itemId);
+                }
+            },
+
+            updateNote: (itemId, notes) => {
+                set({
+                    items: get().items.map((i) =>
+                        i.id === itemId ? { ...i, notes } : i
                     ),
                 });
             },

@@ -17,6 +17,7 @@ const LocationPicker = dynamic(
 import { supabase, uploadKYCDocument } from '@/lib/supabase';
 import { ArrowLeft, ArrowRight, Check, Store, MapPin, FileCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type MerchantType = 'student' | 'general' | null;
@@ -234,14 +235,14 @@ export default function MerchantRegisterPage() {
                             <motion.div
                                 animate={{
                                     scale: step === s ? 1.1 : 1,
-                                    backgroundColor: step >= s ? '#FF6B6B' : '#E2E8F0',
-                                    borderColor: step >= s ? '#FF6B6B' : '#CBD5E1'
+                                    backgroundColor: step >= s ? '#FF6B6B' : '#cbd5e1',
+                                    borderColor: step >= s ? '#FF6B6B' : '#94a3b8'
                                 }}
                                 className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold border-4 transition-colors duration-300`}
                             >
                                 {step > s ? <Check size={20} /> : s}
                             </motion.div>
-                            <span className={`text-xs mt-2 font-bold ${step >= s ? 'text-secondary-900' : 'text-secondary-400'}`}>
+                            <span className={`text-xs mt-2 font-bold ${step >= s ? 'text-secondary-900' : 'text-secondary-600'}`}>
                                 {s === 1 && 'Info'}
                                 {s === 2 && 'Type'}
                                 {s === 3 && 'KYC'}
@@ -286,13 +287,13 @@ export default function MerchantRegisterPage() {
                                                 />
                                             </Suspense>
                                         </div>
-                                        {formData.addressText && <p className="text-xs mt-2 text-secondary-600 flex gap-1"><MapPin size={12} /> {formData.addressText}</p>}
+                                        {formData.addressText && <p className="text-xs mt-2 text-secondary-700 flex gap-1 font-medium"><MapPin size={12} /> {formData.addressText}</p>}
                                         {errors.location && <p className="text-sm text-red-500 mt-1">{errors.location}</p>}
                                     </div>
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-bold text-secondary-900 mb-2">Description</label>
                                         <textarea
-                                            className="w-full px-4 py-3 bg-secondary-50 border-none rounded-xl focus:ring-2 focus:ring-primary-DEFAULT resize-none" rows={3}
+                                            className="w-full px-4 py-3 bg-secondary-50 border-none rounded-xl focus:ring-2 focus:ring-primary-DEFAULT resize-none placeholder:text-secondary-500" rows={3}
                                             value={formData.businessDescription}
                                             onChange={e => updateField('businessDescription', e.target.value)}
                                             placeholder="What makes your food special?"
@@ -338,17 +339,28 @@ export default function MerchantRegisterPage() {
                 </AnimatePresence>
 
                 {/* Footer Nav */}
-                <div className="flex justify-between items-center pt-4">
-                    {step > 1 ? (
-                        <Button variant="secondary" onClick={() => setStep(step - 1)} disabled={isSubmitting}>Back</Button>
-                    ) : (
-                        <Button variant="secondary" onClick={() => router.push('/')}>Cancel</Button>
-                    )}
+                <div className="space-y-6 pt-4">
+                    <div className="flex justify-between items-center">
+                        {step > 1 ? (
+                            <Button variant="secondary" onClick={() => setStep(step - 1)} disabled={isSubmitting}>Back</Button>
+                        ) : (
+                            <Button variant="secondary" onClick={() => router.push('/')}>Cancel</Button>
+                        )}
 
-                    {step < 3 ? (
-                        <Button onClick={handleNext}>Next Step <ArrowRight size={18} className="ml-2" /></Button>
-                    ) : (
-                        <Button onClick={handleSubmit} isLoading={isSubmitting} className="px-8">{isSubmitting ? 'Submitting...' : 'Complete Registration'}</Button>
+                        {step < 3 ? (
+                            <Button onClick={handleNext}>Next Step <ArrowRight size={18} className="ml-2" /></Button>
+                        ) : (
+                            <Button onClick={handleSubmit} isLoading={isSubmitting} className="px-8">{isSubmitting ? 'Submitting...' : 'Complete Registration'}</Button>
+                        )}
+                    </div>
+
+                    {step === 1 && (
+                        <p className="text-center text-sm text-secondary-500">
+                            Sudah punya akun mitra?{' '}
+                            <Link href="/merchant/login" className="text-primary-DEFAULT font-bold hover:underline">
+                                Login di sini
+                            </Link>
+                        </p>
                     )}
                 </div>
 

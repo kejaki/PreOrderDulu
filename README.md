@@ -1,183 +1,89 @@
 # PreOrderDulu - Hyper-Local Food Delivery App
 
-A modern, fast food delivery platform focused on **speed for buyers** and **security for sellers**.
+A modern, fast food delivery platform focused on **speed for buyers** and **security for sellers**. Built with Next.js 14 and Supabase.
 
-## 🚀 Unique Features
+## 🚀 Key Features
 
-### Buyer Side (Guest Checkout)
-- ✅ **NO LOGIN REQUIRED** - Start ordering in seconds
-- ✅ **Geolocation-based** - Auto-detect location and show nearest merchants
-- ✅ **Real-time tracking** - Track your order status via unique link
-- ✅ **Simple checkout** - Just name, WhatsApp, and delivery address
+### 🛒 Buyer Experience (Guest Checkout)
+- **NO LOGIN REQUIRED:** Buyers can start ordering immediately.
+- **Geolocation-based:** Automatically detects user location to show the nearest merchants first.
+- **Smooth Checkout:** Only requires basic info (Name, WhatsApp, Address).
+- **Real-time Tracking:** Track order progress via a unique tracking link (Realtime Supabase).
 
-### Seller Side (Strict KYC)
-- ✅ **Two merchant types:**
-  - **Student (Pelajar):** KTM + Class Schedule + Emergency Contact
-  - **General (Umum):** KTP + Selfie with KTP + Business Photo
-- ✅ **Verification process** - All merchants are verified before going live
-- ✅ **Dashboard** - Manage menu, orders, and store status (Open/Close)
+### 🏪 Merchant Dashboard
+- **Fast Registration:** Multi-step form with map location picker.
+- **Strict KYC Verification:**
+  - **Student:** KTM + Class Schedule + Emergency Contact.
+  - **General:** KTP + Selfie + Business Photo.
+- **Menu Management:** Add/Edit/Delete menu items with image uploads.
+- **Store Control:** Toggle store status (Open/Closed) in one click.
+- **Real-time Orders:** Accept, reject, and update order status (Cooking -> Ready -> Deliver) with instant updates.
+
+### 🛡️ Admin Panel (`/admin/verify`)
+- **KYC Viewer:** Admins can review uploaded documents and merchant details.
+- **Manual Verification:** Approve or reject new merchants to ensure platform security.
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS
-- **Backend:** Supabase (PostgreSQL + PostGIS)
-- **State Management:** Zustand
-- **Maps:** Leaflet + OpenStreetMap
-- **Icons:** Lucide React
+- **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS, Framer Motion.
+- **Backend:** Supabase (Auth, Database, Storage, Realtime).
+- **Maps:** Leaflet + OpenStreetMap (Dynamic client-side rendering).
+- **State:** Zustand (Location & Cart management).
 
-## 📋 Prerequisites
+## 🔧 Setup & Installation
 
-- Node.js 18+ and npm
-- Supabase account ([sign up here](https://supabase.com))
+### 1. Requirements
+- Node.js 18+
+- Supabase Project
 
-## 🔧 Installation
-
-### 1. Clone and Install Dependencies
-
+### 2. Local Setup
 ```bash
-cd /home/ahmad-zaki/Documents/web-masjaki/PreOrderDulu-app
+git clone https://github.com/kejaki/PreOrderDulu.git
+cd PreOrderDulu
 npm install
 ```
 
-### 2. Set Up Supabase
+### 3. Database Configuration (CRITICAL)
+1. In Supabase **SQL Editor**, run the contents of:
+   - `supabase/migrations/001_initial_schema.sql` (Initial tables & logic)
+   - `supabase/apply_rls_fixes.sql` (Security policies & Storage setup)
+2. In Supabase **Auth Settings**:
+   - Disable "Confirm Email" (for easier merchant onboarding).
+   - Enable "Allow Signup".
 
-1. Create a new project at [supabase.com](https://supabase.com)
-2. Run the migration SQL:
-   - Go to **SQL Editor** in Supabase dashboard
-   - Copy contents of `supabase/migrations/001_initial_schema.sql`
-   - Run the query
-3. Create storage bucket:
-   - Go to **Storage**
-   - Create a new bucket called `kyc-documents`
-   - Make it **public**
-4. Get your credentials:
-   - Go to **Settings** → **API**
-   - Copy `Project URL` and `anon public` key
+### 4. Storage Setup
+The SQL script above automatically attempts to create buckets, but ensure these exist and are **Public**:
+- `food-images`
+- `kyc-documents`
 
-### 3. Configure Environment
-
-Create `.env.local`:
-
-```bash
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+### 5. Environment Variables
+Create a `.env.local` file:
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-### 4. Run Development Server
-
+### 6. Run
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+## 🚀 Deployment (Vercel)
+
+1. Connect your GitHub repository to Vercel.
+2. Add the environment variables from `.env.local`.
+3. Vercel will automatically build and deploy the app.
+4. **Important:** Ensure the Supabase `Site URL` in Auth settings matches your Vercel deployment URL.
 
 ## 📂 Project Structure
-
-```
-app/
-├─ page.tsx                          # Buyer landing page (geolocation sorting)
-├─ merchant/
-│  ├─ register/page.tsx              # Merchant registration (multi-step + KYC)
-│  ├─ [id]/page.tsx                  # [TODO] Merchant detail + menu
-│  └─ dashboard/page.tsx             # [TODO] Merchant dashboard
-├─ checkout/page.tsx                 # [TODO] Guest checkout
-└─ order/[token]/page.tsx            # [TODO] Order tracking
-
-components/
-├─ ui/                               # Reusable UI components
-├─ MerchantCard.tsx                  # Merchant display card
-├─ CartButton.tsx                    # Floating cart button
-└─ MerchantRegistration/             # Registration flow components
-
-lib/
-├─ supabase.ts                       # Supabase client + helper functions
-└─ geolocation.ts                    # Distance calculation utilities
-
-store/
-├─ useCartStore.ts                   # Shopping cart state
-└─ useLocationStore.ts               # User location state
-
-supabase/
-└─ migrations/
-   └─ 001_initial_schema.sql         # Complete database schema
-```
-
-## 🗄️ Database Schema
-
-### Tables
-
-1. **merchants** - Store information with geolocation (PostGIS)
-2. **kyc_documents** - KYC verification files (Student vs General)
-3. **menu_items** - Food items offered by merchants
-4. **orders** - Guest orders with tracking token
-5. **order_items** - Order line items
-
-### Key Features
-
-- **PostGIS** for efficient geolocation queries
-- **RPC Function** `get_nearby_merchants(lat, lng, max_distance)`
-- **Row-Level Security (RLS)** for data access control
-- **Real-time subscriptions** for order updates
-
-## 🧪 Testing the App
-
-### Test Buyer Flow
-
-1. Open landing page
-2. Allow geolocation access
-3. View merchants sorted by distance
-4. Use search and distance filters
-
-### Test Merchant Registration
-
-1. Go to `/merchant/register`
-2. **Step 1:** Enter basic info + select location on map
-3. **Step 2:** Choose merchant type:
-   - **Student** → KTM, Class Schedule, Emergency Contact
-   - **General** → KTP, Selfie with KTP, Business Photo
-4. **Step 3:** Upload documents and submit
-
-## 📝 TODO List
-
-### High Priority
-- [ ] Merchant detail page (`/merchant/[id]`)
-- [ ] Guest checkout flow (`/checkout`)
-- [ ] Order tracking page (`/order/[token]`)
-- [ ] Merchant dashboard (`/merchant/dashboard`)
-
-### Medium Priority
-- [ ] Real-time order notifications (Supabase subscriptions)
-- [ ] WhatsApp integration for order confirmations
-- [ ] Image optimization (merchant photos, menu items)
-- [ ] OTP validation for guest checkout
-
-### Low Priority
-- [ ] Admin panel for KYC verification
-- [ ] Merchant analytics dashboard
-- [ ] Push notifications
-- [ ] Multi-language support (EN/ID)
-
-## 🐛 Known Issues
-
-- **Leaflet SSR:** Map component uses `isMounted` check to prevent SSR issues
-- **OTP:** Currently placeholder only - needs Twilio or WhatsApp Business API
-- **Image Uploads:** Requires Supabase Storage bucket `kyc-documents` to be created
-
-## 📚 Learn More
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Supabase Documentation](https://supabase.com/docs)
-- [Leaflet Documentation](https://leafletjs.com/)
-- [PostGIS Documentation](https://postgis.net/)
+- `/app`: Next.js pages and layouts.
+- `/components`: Reusable UI components and specific feature components.
+- `/lib`: Supabase client, geolocation utilities, and API helpers.
+- `/store`: Zustand stores for global state.
+- `/supabase`: SQL migrations and RLS policy scripts.
 
 ## 📄 License
-
 This project is for educational purposes.
 
 ## 👨‍💻 Developer
-
-Built as a demonstration of modern full-stack web development with Next.js 14 and Supabase.
-
----
-
-**Need help?** Check the [walkthrough document](../brain/864ac72f-b154-42e5-b993-6dfecf9cb07d/walkthrough.md) for detailed architecture explanations.
+Built as a demonstration of modern agentic web development.

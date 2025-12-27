@@ -16,17 +16,17 @@ export function Input({
     return (
         <div className="w-full">
             {label && (
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-bold text-secondary-900 mb-1">
                     {label}
-                    {props.required && <span className="text-red-500 ml-1">*</span>}
+                    {props.required && <span className="text-primary-DEFAULT ml-1">*</span>}
                 </label>
             )}
             <input
                 className={`
           w-full px-4 py-2 border rounded-lg
-          focus:ring-2 focus:ring-primary-500 focus:border-primary-500
-          ${error ? 'border-red-500' : 'border-gray-300'}
-          ${props.disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}
+          focus:ring-2 focus:ring-primary-DEFAULT focus:border-primary-DEFAULT
+          ${error ? 'border-red-500' : 'border-secondary-200'}
+          ${props.disabled ? 'bg-secondary-50 cursor-not-allowed' : 'bg-white'}
           ${className}
         `}
                 {...props}
@@ -35,7 +35,7 @@ export function Input({
                 <p className="mt-1 text-sm text-red-600">{error}</p>
             )}
             {helperText && !error && (
-                <p className="mt-1 text-sm text-gray-500">{helperText}</p>
+                <p className="mt-1 text-sm text-secondary-600">{helperText}</p>
             )}
         </div>
     );

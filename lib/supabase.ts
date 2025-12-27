@@ -26,6 +26,8 @@ export interface Merchant {
     profile_photo_url?: string;
     business_description?: string;
     distance_meters?: number; // Added by RPC function
+    rating_average?: number;
+    rating_count?: number;
 }
 
 export interface MenuItem {
@@ -74,6 +76,15 @@ export interface OrderItem {
     quantity: number;
     subtotal: number;
     item_notes?: string;
+}
+
+export interface Review {
+    id: string;
+    order_id: string;
+    merchant_id: string;
+    rating: number;
+    comment?: string;
+    created_at: string;
 }
 
 // Helper functions

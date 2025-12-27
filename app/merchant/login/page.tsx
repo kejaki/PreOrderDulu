@@ -48,7 +48,7 @@ export default function MerchantLoginPage() {
                         <Store size={32} />
                     </div>
                     <h1 className="text-2xl font-bold text-secondary-900">Welcome Back</h1>
-                    <p className="text-secondary-500">Manage your store and orders</p>
+                    <p className="text-secondary-600">Manage your store and orders</p>
                 </div>
 
                 <form onSubmit={handleLogin} className="space-y-6">
