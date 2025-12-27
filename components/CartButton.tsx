@@ -1,13 +1,15 @@
 'use client';
 
+import { useState } from 'react';
 import { useCartStore } from '@/store/useCartStore';
 import { ShoppingBag } from 'lucide-react';
-import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { CartSheet } from './CartSheet';
 
 export function CartButton() {
     const { getItemCount, getTotal } = useCartStore();
+    const [isCartOpen, setIsCartOpen] = useState(false);
     const count = getItemCount();
     const total = getTotal();
     const [isMounted, setIsMounted] = useState(false);
@@ -17,17 +19,18 @@ export function CartButton() {
     if (!isMounted) return null;
 
     return (
-        <AnimatePresence>
-            {count > 0 && (
-                <motion.div
-                    initial={{ y: 100, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: 100, opacity: 0 }}
-                    transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-                    className="fixed bottom-6 right-6 z-50"
-                >
-                    <Link href="/checkout">
+        <>
+            <AnimatePresence>
+                {count > 0 && (
+                    <motion.div
+                        initial={{ y: 100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 100, opacity: 0 }}
+                        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                        className="fixed bottom-6 right-6 z-50"
+                    >
                         <motion.button
+                            onClick={() => setIsCartOpen(true)}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             className="bg-primary-DEFAULT text-white shadow-lg shadow-primary-500/30 rounded-full px-6 py-3 flex items-center gap-3 font-bold text-lg min-w-[160px] justify-between"
@@ -51,9 +54,11 @@ export function CartButton() {
                                 Rp{(total / 1000).toFixed(0)}k
                             </span>
                         </motion.button>
-                    </Link>
-                </motion.div>
-            )}
-        </AnimatePresence>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <CartSheet isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+        </>
     );
 }
