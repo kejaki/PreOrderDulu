@@ -6,6 +6,7 @@ import { getNearbyMerchants, getMerchantsBySearch, type Merchant } from '@/lib/s
 import { getCurrentLocation } from '@/lib/geolocation';
 import MerchantCard from '@/components/MerchantCard';
 import { CartButton } from '@/components/CartButton';
+import { HomeBanner } from '@/components/HomeBanner';
 import { Skeleton } from '@/components/ui/Skeleton';
 import {
     Search,
