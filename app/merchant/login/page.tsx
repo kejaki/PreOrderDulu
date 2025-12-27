@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/Input';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Store } from 'lucide-react';
+import { Logo } from '@/components/Logo';
 
 export default function MerchantLoginPage() {
     const router = useRouter();
@@ -44,8 +45,8 @@ export default function MerchantLoginPage() {
                 className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-secondary-100"
             >
                 <div className="text-center mb-8">
-                    <div className="inline-flex p-3 rounded-xl bg-primary-50 text-primary-DEFAULT mb-4">
-                        <Store size={32} />
+                    <div className="flex justify-center mb-6">
+                        <Logo variant="icon" width={64} height={64} />
                     </div>
                     <h1 className="text-2xl font-bold text-secondary-900">Welcome Back</h1>
                     <p className="text-secondary-600">Manage your store and orders</p>

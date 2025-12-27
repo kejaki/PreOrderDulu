@@ -7,6 +7,7 @@ import { getCurrentLocation } from '@/lib/geolocation';
 import MerchantCard from '@/components/MerchantCard';
 import { CartButton } from '@/components/CartButton';
 import { HomeBanner } from '@/components/HomeBanner';
+import { Header } from '@/components/Header';
 import { MenuRecommendationSlider } from '@/components/MenuRecommendationSlider';
 import { Skeleton } from '@/components/ui/Skeleton';
 import {
@@ -115,31 +116,9 @@ export default function Home() {
             animate={{ opacity: 1 }}
             className="min-h-screen bg-gray-50 pb-24 font-sans"
         >
-            {/* Header Content */}
+            <Header />
+
             <div className="max-w-md mx-auto px-4 pt-6 pb-2">
-                <div className="flex justify-between items-center mb-6">
-                    <div className="flex items-center gap-2">
-                        <div className="bg-rose-50 p-2 rounded-full">
-                            <MapPin className="text-primary-DEFAULT" size={20} />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Antar ke</span>
-                            <span className="text-sm font-bold text-secondary-DEFAULT truncate max-w-[150px]">{locationAddress}</span>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Link
-                            href="/order/lookup"
-                            className="px-4 py-2 bg-white border border-gray-200 text-slate-700 rounded-full font-medium text-sm shadow-sm hover:bg-gray-50 transition-all flex items-center gap-2 active:scale-95"
-                        >
-                            <Search size={16} />
-                            Cek Pesanan
-                        </Link>
-                        <Link href="/merchant/login" className="p-2 bg-white border border-gray-200 rounded-full text-slate-700 hover:bg-gray-50 transition-colors shadow-sm">
-                            <User size={20} />
-                        </Link>
-                    </div>
-                </div>
 
                 <div className="mb-6">
                     <h2 className="text-3xl font-bold text-secondary-DEFAULT leading-tight">

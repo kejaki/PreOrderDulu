@@ -17,8 +17,7 @@ SELECT mi.id,
     mi.description
 FROM menu_items mi
     JOIN merchants m ON mi.merchant_id = m.id
-WHERE mi.is_available = true
-    AND m.is_open = true
+WHERE mi.is_available = true -- AND m.is_open = true -- Relaxed for testing
 ORDER BY RANDOM()
 LIMIT limit_count;
 END;

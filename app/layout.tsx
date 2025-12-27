@@ -8,6 +8,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
     title: "PreOrder Dulu - Hyper-Local Food Delivery",
     description: "Fast food delivery from nearby merchants. No login required!",
+    icons: {
+        icon: '/icon.svg',
+    },
 };
 
 export default function RootLayout({
