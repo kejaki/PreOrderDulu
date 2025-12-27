@@ -25,6 +25,11 @@ export default function CheckoutPage() {
     const { items, merchantId, merchantName, clearCart, getTotal, orderType, setOrderType } = useCartStore();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // State for merchant data and calculated fee
+    const [merchant, setMerchant] = useState<Merchant | null>(null);
+    const [deliveryFee, setDeliveryFee] = useState(0);
+    const [distanceInfo, setDistanceInfo] = useState<{ km: string; isFree: boolean } | null>(null);
+
     // Fetch merchant details on mount
     useEffect(() => {
         if (merchantId) {
