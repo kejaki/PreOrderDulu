@@ -45,7 +45,7 @@ export default function OrderLookupPage() {
 
             if (error) throw error;
 
-            setOrders(data as OrderResult[]);
+            setOrders(data as any);
 
             if (data.length === 0) {
                 toast('No active orders found for this number');
@@ -162,7 +162,9 @@ export default function OrderLookupPage() {
                                         >
                                             <div className="flex items-start justify-between mb-3">
                                                 <div className="flex-1">
-                                                    <h3 className="font-bold text-gray-900">{order.merchants?.merchant_name || 'Unknown Merchant'}</h3>
+                                                    <h3 className="font-bold text-gray-900">
+                                                        {Array.isArray(order.merchants) ? order.merchants[0]?.merchant_name : order.merchants?.merchant_name || 'Unknown Merchant'}
+                                                    </h3>
                                                     <p className="text-xs text-gray-500 mt-0.5">
                                                         {new Date(order.created_at).toLocaleDateString('id-ID', {
                                                             day: 'numeric',
