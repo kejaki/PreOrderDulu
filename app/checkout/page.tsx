@@ -11,17 +11,28 @@ const LocationPicker = dynamic(
         loading: () => <div className="h-64 bg-secondary-50 animate-pulse rounded-xl" />
     }
 );
-import { supabase } from '@/lib/supabase';
-import { ArrowLeft, MapPin, Phone, User, ChevronRight, Bike, ShoppingBag, Clock } from 'lucide-react';
+import { supabase, getMerchantById, type Merchant } from '@/lib/supabase';
+import { ArrowLeft, MapPin, Phone, User, ChevronRight, Bike, ShoppingBag, Clock, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { nanoid } from 'nanoid';
 import { motion, AnimatePresence } from 'framer-motion';
+import { calculateDeliveryFee } from '@/utils/calculateFee';
+import { calculateDistance } from '@/lib/geolocation';
 
 export default function CheckoutPage() {
     const router = useRouter();
     const { items, merchantId, merchantName, clearCart, getTotal, orderType, setOrderType } = useCartStore();
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Fetch merchant details on mount
+    useEffect(() => {
+        if (merchantId) {
+            getMerchantById(merchantId).then(data => {
+                if (data) setMerchant(data);
+            });
+        }
+    }, [merchantId]);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -32,6 +43,38 @@ export default function CheckoutPage() {
         notes: '',
         pickupTime: '',
     });
+
+    // Recalculate fee when location or order type changes
+    const calculateFee = () => {
+        if (!merchant || !formData.latitude || !formData.longitude) {
+            setDeliveryFee(orderType === 'delivery' ? 0 : 0); // Default 0 to start
+            setDistanceInfo(null);
+            return;
+        };
+
+        const result = calculateDeliveryFee(
+            formData.latitude,
+            formData.longitude,
+            merchant.latitude,
+            merchant.longitude,
+            orderType
+        );
+
+        setDeliveryFee(result.fee);
+        setDistanceInfo({
+            km: (result.distanceMeters / 1000).toFixed(1),
+            isFree: result.isFreeZone
+        });
+    };
+
+    // Trigger calculation when dependencies change
+    // We can't use useEffect easily with nested objects without deep compare, 
+    // so we call it where needed or use specific deps
+    const updateLocation = (lat: number, lng: number, address: string) => {
+        setFormData(prev => ({ ...prev, latitude: lat, longitude: lng, addressText: address }));
+        // We need to wait for state update or pass values directly. 
+        // Better to use useEffect on formData.latitude/longitude
+    };
 
     if (items.length === 0) {
         return (
@@ -44,7 +87,28 @@ export default function CheckoutPage() {
     }
 
     const subtotal = getTotal();
-    const deliveryFee = orderType === 'delivery' ? 5000 : 0;
+    // Recalculate fee whenever relevant state changes
+    useEffect(() => {
+        if (merchant && formData.latitude && formData.longitude) {
+            const result = calculateDeliveryFee(
+                formData.latitude,
+                formData.longitude,
+                merchant.latitude,
+                merchant.longitude,
+                orderType
+            );
+            setDeliveryFee(result.fee);
+            setDistanceInfo({
+                km: (result.distanceMeters / 1000).toFixed(1),
+                isFree: result.isFreeZone
+            });
+        } else {
+            setDeliveryFee(0);
+            setDistanceInfo(null);
+        }
+    }, [merchant, formData.latitude, formData.longitude, orderType]);
+
+    const subtotal = getTotal();
     const totalAmount = subtotal + deliveryFee;
 
     const handleSubmit = async () => {
@@ -144,8 +208,8 @@ export default function CheckoutPage() {
                         <button
                             onClick={() => setOrderType('delivery')}
                             className={`py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${orderType === 'delivery'
-                                    ? 'bg-primary-DEFAULT text-white shadow-md'
-                                    : 'bg-white text-gray-600 hover:bg-gray-50'
+                                ? 'bg-primary-DEFAULT text-white shadow-md'
+                                : 'bg-white text-gray-600 hover:bg-gray-50'
                                 }`}
                         >
                             <Bike size={18} />
@@ -154,8 +218,8 @@ export default function CheckoutPage() {
                         <button
                             onClick={() => setOrderType('pickup')}
                             className={`py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${orderType === 'pickup'
-                                    ? 'bg-primary-DEFAULT text-white shadow-md'
-                                    : 'bg-white text-gray-600 hover:bg-gray-50'
+                                ? 'bg-primary-DEFAULT text-white shadow-md'
+                                : 'bg-white text-gray-600 hover:bg-gray-50'
                                 }`}
                         >
                             <ShoppingBag size={18} />
@@ -254,9 +318,22 @@ export default function CheckoutPage() {
                             <span>Rp {subtotal.toLocaleString()}</span>
                         </div>
                         {orderType === 'delivery' && (
-                            <div className="flex justify-between">
-                                <span>Delivery Fee</span>
-                                <span>Rp {deliveryFee.toLocaleString()}</span>
+                            <div className="flex justify-between items-center">
+                                <div className="flex flex-col">
+                                    <span>Ongkos Kirim</span>
+                                    {distanceInfo && (
+                                        <span className="text-[10px] text-gray-500 font-medium flex items-center gap-1">
+                                            {distanceInfo.isFree && <ShieldCheck size={10} className="text-green-500" />}
+                                            Jarak: {distanceInfo.km}km
+                                            {distanceInfo.isFree && <span className="text-green-600 ml-1">(Gratis &lt; 2km)</span>}
+                                        </span>
+                                    )}
+                                </div>
+                                {deliveryFee === 0 ? (
+                                    <span className="font-bold text-green-600">GRATIS</span>
+                                ) : (
+                                    <span>Rp {deliveryFee.toLocaleString()}</span>
+                                )}
                             </div>
                         )}
                         <div className="border-t border-dashed border-gray-200 my-2 pt-2 flex justify-between font-bold text-lg text-secondary-DEFAULT">
