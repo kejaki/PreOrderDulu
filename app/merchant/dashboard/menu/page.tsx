@@ -194,7 +194,7 @@ export default function MenuManagementPage() {
             description: formData.description,
             price: price,
             category: formData.category,
-            image_url: formData.image_url || formData.images[0] || null,
+            photo_url: formData.image_url || formData.images[0] || null,
             images: formData.images.length > 0 ? formData.images : null,
             video_url: formData.video_url || null,
             is_available: formData.is_available,

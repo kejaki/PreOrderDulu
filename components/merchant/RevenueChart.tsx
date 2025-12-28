@@ -38,8 +38,8 @@ export function RevenueChart({ data, isLoading }: RevenueChartProps) {
                 <p className="text-slate-500 text-sm">Last 7 Days Performance</p>
             </div>
 
-            <div className="flex-1 w-full min-h-0">
-                <ResponsiveContainer width="100%" height="100%">
+            <div className="flex-1 w-full min-h-0" style={{ minHeight: '200px' }}>
+                <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={100}>
                     <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                         <XAxis
                             dataKey="day_name"
