@@ -83,8 +83,8 @@ export default function AdminTicketPage() {
                                 key={f}
                                 onClick={() => setFilter(f as any)}
                                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === f
-                                        ? 'bg-primary-600 text-white shadow-md'
-                                        : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                                    ? 'bg-primary-600 text-white shadow-md'
+                                    : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
                                     }`}
                             >
                                 {f}
@@ -176,8 +176,8 @@ export default function AdminTicketPage() {
                                                             key={s}
                                                             onClick={() => setStatusUpdate(s)}
                                                             className={`px-3 py-1 rounded text-xs border ${statusUpdate === s
-                                                                    ? 'bg-slate-800 text-white border-slate-800'
-                                                                    : 'bg-white text-slate-600 border-slate-300'
+                                                                ? 'bg-slate-800 text-white border-slate-800'
+                                                                : 'bg-white text-slate-600 border-slate-300'
                                                                 }`}
                                                         >
                                                             {s}
@@ -197,7 +197,7 @@ export default function AdminTicketPage() {
                                             </div>
                                             <div className="flex justify-end gap-2">
                                                 <Button
-                                                    variant="ghost"
+                                                    variant="secondary"
                                                     onClick={() => {
                                                         setRespondingId(null);
                                                         setResponseText('');
