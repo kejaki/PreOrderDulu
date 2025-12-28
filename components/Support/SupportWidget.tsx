@@ -4,9 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Headphones, X, Send, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
 import toast from 'react-hot-toast';
-import { createSupportSession, handleBotResponse, sendUserMessage } from '@/actions/supportBot';
+import { createSupportSession, createGuestSession, handleBotResponse, sendUserMessage } from '@/actions/supportBot';
 
 interface Message {
     id: string;
@@ -17,6 +16,19 @@ interface Message {
     created_at: string;
 }
 
+// Generate or retrieve guest ID
+function getGuestId(): string {
+    const STORAGE_KEY = 'support_guest_token';
+    let guestId = localStorage.getItem(STORAGE_KEY);
+
+    if (!guestId) {
+        guestId = `guest_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+        localStorage.setItem(STORAGE_KEY, guestId);
+    }
+
+    return guestId;
+}
+
 export function SupportWidget() {
     const [isOpen, setIsOpen] = useState(false);
     const [sessionId, setSessionId] = useState<string | null>(null);
@@ -25,6 +37,7 @@ export function SupportWidget() {
     const [isLoading, setIsLoading] = useState(false);
     const [isSending, setIsSending] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [isGuest, setIsGuest] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // Initialize session when widget opens
@@ -54,7 +67,6 @@ export function SupportWidget() {
                     const newMessage = payload.new as Message;
                     setMessages((prev) => [...prev, newMessage]);
 
-                    // Increment unread count if widget is closed and message is not from user
                     if (!isOpen && newMessage.sender_type !== 'user') {
                         setUnreadCount((prev) => prev + 1);
                     }
@@ -83,14 +95,19 @@ export function SupportWidget() {
         setIsLoading(true);
         try {
             const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                toast.error('Anda harus login terlebih dahulu');
-                setIsOpen(false);
-                return;
-            }
 
-            const session = await createSupportSession(user.id);
-            setSessionId(session.id);
+            if (user) {
+                // Authenticated user
+                setIsGuest(false);
+                const session = await createSupportSession(user.id);
+                setSessionId(session.id);
+            } else {
+                // Guest user
+                setIsGuest(true);
+                const guestId = getGuestId();
+                const session = await createGuestSession(guestId);
+                setSessionId(session.id);
+            }
         } catch (error) {
             console.error('Failed to create session:', error);
             toast.error('Gagal memulai chat');
@@ -172,7 +189,6 @@ export function SupportWidget() {
                     whileHover={{ scale: 1.05, boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.3)' }}
                     whileTap={{ scale: 0.95 }}
                 >
-                    {/* Icon with cross-fade transition */}
                     <AnimatePresence mode="wait">
                         {isOpen ? (
                             <motion.div
@@ -301,6 +317,11 @@ export function SupportWidget() {
 
                         {/* Input */}
                         <div className="p-3 bg-white border-t border-slate-200">
+                            {isGuest && (
+                                <p className="text-[10px] text-slate-500 mb-2 px-2 italic">
+                                    💡 Anda chat sebagai Tamu. Chat akan hilang jika browser dibersihkan.
+                                </p>
+                            )}
                             <div className="flex items-center gap-2">
                                 <input
                                     type="text"

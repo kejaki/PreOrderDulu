@@ -44,6 +44,36 @@ export async function createSupportSession(userId: string) {
     return data;
 }
 
+export async function createGuestSession(guestId: string) {
+    const { data, error } = await supabaseAdmin
+        .from('support_sessions')
+        .insert({
+            guest_id: guestId,
+            user_id: null,  // Explicitly null for guest
+            status: 'bot_active'
+        })
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    // Send guest welcome message
+    await sendBotMessage(data.id, {
+        sender_type: 'bot',
+        message_type: 'text',
+        content: 'Halo Kak! Ada yang bisa dibantu? 👋\n\n(Anda chat sebagai Tamu)'
+    });
+
+    // Send guest menu (no "Lacak Order")
+    await sendBotMessage(data.id, {
+        sender_type: 'bot',
+        message_type: 'options',
+        content: JSON.stringify(['Tanya Produk', 'Cara Pesan', 'Chat Admin', 'Login Sekarang'])
+    });
+
+    return data;
+}
+
 export async function sendBotMessage(sessionId: string, message: BotResponse) {
     const { error } = await supabaseAdmin
         .from('support_messages')
@@ -60,7 +90,81 @@ export async function sendBotMessage(sessionId: string, message: BotResponse) {
 export async function handleBotResponse(sessionId: string, userMessage: string) {
     const normalizedMessage = userMessage.toLowerCase().trim();
 
-    // Main Menu
+    // Get session to check if guest or authenticated
+    const { data: session } = await supabaseAdmin
+        .from('support_sessions')
+        .select('user_id, guest_id')
+        .eq('id', sessionId)
+        .single();
+
+    const isGuest = !session?.user_id && session?.guest_id;
+
+    // === GUEST-SPECIFIC RESPONSES ===
+    if (isGuest) {
+        if (normalizedMessage.includes('tanya produk') || normalizedMessage.includes('produk')) {
+            await sendBotMessage(sessionId, {
+                sender_type: 'bot',
+                message_type: 'text',
+                content: '🍽️ Kami menyediakan Pre-Order makanan dari berbagai merchant.\n\nSilakan login untuk melihat menu lengkap atau langsung pesan!'
+            });
+            await sendGuestMenu(sessionId);
+            return;
+        }
+
+        if (normalizedMessage.includes('cara pesan') || normalizedMessage.includes('order')) {
+            await sendBotMessage(sessionId, {
+                sender_type: 'bot',
+                message_type: 'text',
+                content: '📱 Cara Pesan:\n1. Buka halaman utama\n2. Pilih merchant\n3. Pilih menu & tambah ke keranjang\n4. Checkout (tanpa login!)\n5. Tunggu konfirmasi dari penjual'
+            });
+            await sendGuestMenu(sessionId);
+            return;
+        }
+
+        if (normalizedMessage.includes('login sekarang') || normalizedMessage.includes('login')) {
+            await sendBotMessage(sessionId, {
+                sender_type: 'bot',
+                message_type: 'text',
+                content: '🔐 Silakan login di halaman utama untuk akses fitur lengkap:\n\n- Lacak pesanan\n- Riwayat order\n- Simpan alamat\n\nDan masih banyak lagi!'
+            });
+            await sendGuestMenu(sessionId);
+            return;
+        }
+
+        if (normalizedMessage.includes('chat admin')) {
+            // Ask for contact info first
+            await sendBotMessage(sessionId, {
+                sender_type: 'bot',
+                message_type: 'text',
+                content: '👨‍💼 Sebelum terhubung dengan Admin, boleh minta No WhatsApp atau Email Kakak?\n\n(Agar Admin bisa menghubungi jika chat terputus)'
+            });
+            // Don't escalate yet, wait for contact info
+            return;
+        }
+
+        // If message looks like contact info (contains @ or numbers)
+        if (normalizedMessage.includes('@') || /\d{10,}/.test(normalizedMessage)) {
+            // Save contact info
+            await supabaseAdmin
+                .from('support_sessions')
+                .update({ contact_info: userMessage })
+                .eq('id', sessionId);
+
+            // Now escalate
+            return await escalateToAdmin(sessionId);
+        }
+
+        // Default guest response
+        await sendBotMessage(sessionId, {
+            sender_type: 'bot',
+            message_type: 'text',
+            content: 'Maaf, saya tidak mengerti. Silakan pilih dari menu berikut:'
+        });
+        await sendGuestMenu(sessionId);
+        return;
+    }
+
+    // === AUTHENTICATED USER RESPONSES ===
     if (normalizedMessage.includes('lacak order') || normalizedMessage.includes('cek pesanan')) {
         return await handleTrackOrder(sessionId);
     }
@@ -100,18 +204,15 @@ async function sendMainMenu(sessionId: string) {
     });
 }
 
+async function sendGuestMenu(sessionId: string) {
+    await sendBotMessage(sessionId, {
+        sender_type: 'bot',
+        message_type: 'options',
+        content: JSON.stringify(['Tanya Produk', 'Cara Pesan', 'Chat Admin', 'Login Sekarang'])
+    });
+}
+
 async function handleTrackOrder(sessionId: string) {
-    // Get user ID from session
-    const { data: session } = await supabaseAdmin
-        .from('support_sessions')
-        .select('user_id')
-        .eq('id', sessionId)
-        .single();
-
-    if (!session) return;
-
-    // Fetch active orders - using guest_whatsapp since orders are guest-based
-    // We'll need to get the user's phone/whatsapp from their profile or ask them
     await sendBotMessage(sessionId, {
         sender_type: 'bot',
         message_type: 'text',
