@@ -16,6 +16,10 @@ interface Message {
     created_at: string;
 }
 
+interface SupportWidgetProps {
+    hideFloatingButton?: boolean;  // Hide FAB if integrated in header
+}
+
 // Generate or retrieve guest ID
 function getGuestId(): string {
     const STORAGE_KEY = 'support_guest_token';
@@ -29,7 +33,7 @@ function getGuestId(): string {
     return guestId;
 }
 
-export function SupportWidget() {
+export function SupportWidget({ hideFloatingButton = false }: SupportWidgetProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [sessionId, setSessionId] = useState<string | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
@@ -39,6 +43,13 @@ export function SupportWidget() {
     const [unreadCount, setUnreadCount] = useState(0);
     const [isGuest, setIsGuest] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Listen to toggle events from header
+    useEffect(() => {
+        const handleToggle = () => setIsOpen(prev => !prev);
+        window.addEventListener('toggle-support', handleToggle as EventListener);
+        return () => window.removeEventListener('toggle-support', handleToggle as EventListener);
+    }, []);
 
     // Initialize session when widget opens
     useEffect(() => {
@@ -97,12 +108,10 @@ export function SupportWidget() {
             const { data: { user } } = await supabase.auth.getUser();
 
             if (user) {
-                // Authenticated user
                 setIsGuest(false);
                 const session = await createSupportSession(user.id);
                 setSessionId(session.id);
             } else {
-                // Guest user
                 setIsGuest(true);
                 const guestId = getGuestId();
                 const session = await createGuestSession(guestId);
@@ -176,61 +185,63 @@ export function SupportWidget() {
 
     return (
         <>
-            {/* Floating Action Button */}
-            <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-                className="fixed bottom-6 right-6 z-50"
-            >
-                <motion.button
-                    onClick={() => setIsOpen(!isOpen)}
-                    className="relative h-16 w-16 rounded-full bg-gradient-to-br from-rose-600 to-rose-700 text-white shadow-xl flex items-center justify-center overflow-hidden"
-                    whileHover={{ scale: 1.05, boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.3)' }}
-                    whileTap={{ scale: 0.95 }}
+            {/* Floating Action Button - Only show if not hidden */}
+            {!hideFloatingButton && (
+                <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                    className="fixed bottom-24 right-6 z-50"
                 >
-                    <AnimatePresence mode="wait">
-                        {isOpen ? (
-                            <motion.div
-                                key="close"
-                                initial={{ rotate: -90, opacity: 0 }}
-                                animate={{ rotate: 0, opacity: 1 }}
-                                exit={{ rotate: 90, opacity: 0 }}
-                                transition={{ duration: 0.2 }}
-                            >
-                                <X size={28} />
-                            </motion.div>
-                        ) : (
-                            <motion.div
-                                key="headset"
-                                initial={{ rotate: 90, opacity: 0 }}
-                                animate={{ rotate: 0, opacity: 1 }}
-                                exit={{ rotate: -90, opacity: 0 }}
-                                transition={{ duration: 0.2 }}
-                            >
-                                <Headphones size={28} />
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                    <motion.button
+                        onClick={() => setIsOpen(!isOpen)}
+                        className="relative h-16 w-16 rounded-full bg-gradient-to-br from-rose-600 to-rose-700 text-white shadow-xl flex items-center justify-center overflow-hidden"
+                        whileHover={{ scale: 1.05, boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.3)' }}
+                        whileTap={{ scale: 0.95 }}
+                    >
+                        <AnimatePresence mode="wait">
+                            {isOpen ? (
+                                <motion.div
+                                    key="close"
+                                    initial={{ rotate: -90, opacity: 0 }}
+                                    animate={{ rotate: 0, opacity: 1 }}
+                                    exit={{ rotate: 90, opacity: 0 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    <X size={28} />
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key="headset"
+                                    initial={{ rotate: 90, opacity: 0 }}
+                                    animate={{ rotate: 0, opacity: 1 }}
+                                    exit={{ rotate: -90, opacity: 0 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    <Headphones size={28} />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
-                    {/* Notification Badge */}
-                    <AnimatePresence>
-                        {unreadCount > 0 && !isOpen && (
-                            <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                exit={{ scale: 0 }}
-                                transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                                className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-red-500 border-2 border-white flex items-center justify-center"
-                            >
-                                <span className="text-xs font-bold text-white">
-                                    {unreadCount > 9 ? '9+' : unreadCount}
-                                </span>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </motion.button>
-            </motion.div>
+                        {/* Notification Badge */}
+                        <AnimatePresence>
+                            {unreadCount > 0 && !isOpen && (
+                                <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    exit={{ scale: 0 }}
+                                    transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                                    className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-red-500 border-2 border-white flex items-center justify-center"
+                                >
+                                    <span className="text-xs font-bold text-white">
+                                        {unreadCount > 9 ? '9+' : unreadCount}
+                                    </span>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </motion.button>
+                </motion.div>
+            )}
 
             {/* Chat Window */}
             <AnimatePresence>
@@ -240,12 +251,20 @@ export function SupportWidget() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                        className="fixed bottom-24 right-6 w-[350px] h-[500px] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col z-40 overflow-hidden"
+                        className="fixed bottom-4 right-4 md:bottom-24 md:right-6 w-[calc(100vw-2rem)] md:w-[350px] h-[70vh] md:h-[420px] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col z-[100] overflow-hidden"
                     >
                         {/* Header */}
-                        <div className="bg-gradient-to-r from-rose-600 to-rose-700 text-white p-4">
-                            <h3 className="font-bold text-lg">Customer Support</h3>
-                            <p className="text-xs text-rose-100">Online - Siap membantu Anda</p>
+                        <div className="bg-gradient-to-r from-rose-600 to-rose-700 text-white p-4 flex justify-between items-center">
+                            <div>
+                                <h3 className="font-bold text-lg">Customer Support</h3>
+                                <p className="text-xs text-rose-100">Online - Siap membantu Anda</p>
+                            </div>
+                            <button
+                                onClick={() => setIsOpen(false)}
+                                className="md:hidden p-2 hover:bg-white/20 rounded-full transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
                         </div>
 
                         {/* Messages */}

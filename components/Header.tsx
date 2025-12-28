@@ -2,7 +2,7 @@
 
 import { Logo } from '@/components/Logo';
 import { useLocationStore } from '@/store/useLocationStore';
-import { MapPin, Search, User, Bike } from 'lucide-react';
+import { MapPin, Search, User, Bike, HeadphonesIcon } from 'lucide-react';
 import Link from 'next/link';
 
 export function Header() {
@@ -18,15 +18,23 @@ export function Header() {
                     <Logo variant="full" width={140} height={35} />
                 </Link>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                     <Link
                         href="/order/lookup"
                         className="px-3 py-2 bg-gray-50 text-slate-700 rounded-full hover:bg-gray-100 transition-colors flex items-center gap-2 font-medium text-xs md:text-sm"
                         title="Lacak Pesanan"
                     >
                         <Bike size={18} />
-                        <span>Lacak Pesanan</span>
+                        <span className="hidden md:inline">Lacak Pesanan</span>
                     </Link>
+                    <button
+                        onClick={() => window.dispatchEvent(new CustomEvent('toggle-support'))}
+                        className="px-3 py-2 bg-rose-50 text-rose-600 rounded-full hover:bg-rose-100 transition-colors flex items-center gap-2 font-medium text-xs md:text-sm"
+                        title="Customer Support"
+                    >
+                        <HeadphonesIcon size={18} />
+                        <span className="hidden md:inline">Bantuan</span>
+                    </button>
                 </div>
             </div>
 
