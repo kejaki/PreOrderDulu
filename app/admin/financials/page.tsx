@@ -56,7 +56,7 @@ export default function AdminFinancialsPage() {
                 created_at,
                 status,
                 customer_email,
-                merchants!inner(business_name)
+                merchants!inner(merchant_name)
             `)
             .eq('status', 'completed')
             .order('created_at', { ascending: false })
@@ -106,7 +106,7 @@ export default function AdminFinancialsPage() {
             const txList: Transaction[] = orders.map(order => ({
                 id: order.id,
                 order_id: order.id.substring(0, 8),
-                merchant_name: (order.merchants as any).business_name,
+                merchant_name: (order.merchants as any).merchant_name,
                 customer_email: order.customer_email,
                 amount: order.total_amount || 0,
                 platform_fee: (order.total_amount || 0) * (feePercent / 100),
