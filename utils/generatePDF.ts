@@ -132,7 +132,7 @@ export const downloadPDFReport = async (
         headStyles: { fillColor: [225, 29, 72], textColor: 255, fontStyle: 'bold' }, // Rose-600
         styles: { fontSize: 9, cellPadding: 3 },
         columnStyles: {
-            0: { halign: 'center', width: 20 }, // Rank
+            0: { halign: 'center', cellWidth: 20 }, // Rank
             2: { halign: 'center' }, // Qty
             3: { halign: 'right' } // Revenue
         }
@@ -161,7 +161,7 @@ export const downloadPDFReport = async (
         headStyles: { fillColor: [15, 23, 42], textColor: 255 }, // Slate-900
         styles: { fontSize: 8, cellPadding: 2 },
         columnStyles: {
-            0: { halign: 'center', width: 10 },
+            0: { halign: 'center', cellWidth: 10 },
             5: { halign: 'right' }
         },
         didDrawPage: (data) => {
