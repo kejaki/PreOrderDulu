@@ -15,7 +15,7 @@ interface Transaction {
     id: string;
     order_id: string;
     merchant_name: string;
-    customer_email: string;
+    customer_name: string;
     amount: number;
     platform_fee: number;
     created_at: string;
@@ -55,7 +55,7 @@ export default function AdminFinancialsPage() {
                 total_amount,
                 created_at,
                 status,
-                customer_email,
+                guest_name,
                 merchants!inner(merchant_name)
             `)
             .eq('status', 'completed')
@@ -107,7 +107,7 @@ export default function AdminFinancialsPage() {
                 id: order.id,
                 order_id: order.id.substring(0, 8),
                 merchant_name: (order.merchants as any).merchant_name,
-                customer_email: order.customer_email,
+                customer_name: order.guest_name || 'Guest',
                 amount: order.total_amount || 0,
                 platform_fee: (order.total_amount || 0) * (feePercent / 100),
                 created_at: order.created_at,
@@ -232,7 +232,7 @@ export default function AdminFinancialsPage() {
                                             <div className="text-sm text-slate-300">{tx.merchant_name}</div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="text-sm text-slate-300">{tx.customer_email}</div>
+                                            <div className="text-sm text-slate-300">{tx.customer_name}</div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="text-sm font-bold text-green-400">
