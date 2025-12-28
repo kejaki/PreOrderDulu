@@ -91,8 +91,8 @@ export default function AdminMerchantsPage() {
     };
 
     const filteredMerchants = merchants.filter(m =>
-        m.business_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.email.toLowerCase().includes(searchQuery.toLowerCase())
+        (m.business_name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+        (m.email?.toLowerCase() || '').includes(searchQuery.toLowerCase())
     );
 
     return (
@@ -108,8 +108,8 @@ export default function AdminMerchantsPage() {
                 <button
                     onClick={() => setActiveTab('pending')}
                     className={`px-6 py-3 rounded-lg font-medium transition-colors ${activeTab === 'pending'
-                            ? 'bg-rose-600 text-white'
-                            : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                        ? 'bg-rose-600 text-white'
+                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
                         }`}
                 >
                     Needs Approval
@@ -117,8 +117,8 @@ export default function AdminMerchantsPage() {
                 <button
                     onClick={() => setActiveTab('all')}
                     className={`px-6 py-3 rounded-lg font-medium transition-colors ${activeTab === 'all'
-                            ? 'bg-rose-600 text-white'
-                            : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                        ? 'bg-rose-600 text-white'
+                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
                         }`}
                 >
                     All Merchants
