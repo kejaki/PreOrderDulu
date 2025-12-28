@@ -197,7 +197,7 @@ export default function AdminMerchantsPage() {
                                             <Badge variant={merchant.is_verified ? 'success' : 'warning'}>
                                                 {merchant.is_verified ? 'Verified' : 'Unverified'}
                                             </Badge>
-                                            <Badge variant={merchant.is_open ? 'success' : 'secondary'}>
+                                            <Badge variant={merchant.is_open ? 'success' : 'default'}>
                                                 {merchant.is_open ? 'Open' : 'Closed'}
                                             </Badge>
                                         </div>
