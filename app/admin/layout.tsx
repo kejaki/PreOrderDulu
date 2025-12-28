@@ -28,7 +28,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     const checkAdminAccess = async () => {
         try {
+            console.log('🔍 Checking admin access...');
             const { data: { user } } = await supabase.auth.getUser();
+            console.log('👤 User:', user?.email);
 
             if (!user) {
                 router.push('/');
@@ -36,16 +38,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             }
 
             // Check if user is super admin
-            const { data: profile } = await supabase
+            const { data: profile, error: profileError } = await supabase
                 .from('profiles')
                 .select('role')
                 .eq('id', user.id)
                 .single();
 
-            if (profile?.role !== 'super_admin') {
+            console.log('📋 Profile data:', profile);
+            console.log('❌ Profile error:', profileError);
+
+            if (!profile) {
+                console.log('⚠️ No profile found');
                 router.push('/403');
                 return;
             }
+
+            if (profile.role !== 'super_admin') {
+                console.log('🚫 Role is:', profile.role);
+                router.push('/403');
+                return;
+            }
+
+            console.log('✅ Admin access granted!');
 
             setIsAuthorized(true);
         } catch (error) {
