@@ -13,6 +13,7 @@ import { MenuPerformance } from '@/components/merchant/MenuPerformance';
 import { OrderPipeline } from '@/components/merchant/OrderPipeline';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
+import { SupportWidget } from '@/components/Support/SupportWidget';
 
 export default function MerchantDashboard() {
     const router = useRouter();
@@ -230,6 +231,9 @@ export default function MerchantDashboard() {
                     </div>
                 </div>
             </main>
+
+            {/* Support Widget - Floating for Merchant */}
+            <SupportWidget />
         </div>
     );
 }

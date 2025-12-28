@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { SupportWidget } from '@/components/Support/SupportWidget';
 
 const CATEGORIES = [
     { id: 'all', label: 'Semua', icon: UtensilsCrossed },
@@ -194,6 +195,9 @@ export default function Home() {
 
             {/* Floating Cart Button */}
             <CartButton />
+
+            {/* Support Widget - Controlled from Header */}
+            <SupportWidget hideFloatingButton />
         </motion.div>
     );
 }
