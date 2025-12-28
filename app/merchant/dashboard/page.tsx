@@ -6,7 +6,7 @@ import { supabase, type Merchant } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { LogOut, Power, Calendar, Store, Settings } from 'lucide-react';
+import { LogOut, Power, Calendar, Store, Settings, UtensilsCrossed } from 'lucide-react';
 import { DashboardStats } from '@/components/merchant/DashboardStats';
 import { RevenueChart } from '@/components/merchant/RevenueChart';
 import { MenuPerformance } from '@/components/merchant/MenuPerformance';
@@ -177,13 +177,18 @@ export default function MerchantDashboard() {
                             </button>
                         </div>
 
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
                             <div className="hidden md:flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600">
                                 <Calendar size={16} />
                                 {format(date, 'd MMMM yyyy', { locale: id })}
                             </div>
 
-                            <Button variant="secondary" size="sm" onClick={() => router.push('/merchant/dashboard/settings')} className="mr-2">
+                            <Button variant="primary" size="sm" onClick={() => router.push('/merchant/dashboard/menu')}>
+                                <UtensilsCrossed size={16} className="md:mr-2" />
+                                <span className="hidden md:inline">Kelola Menu</span>
+                            </Button>
+
+                            <Button variant="secondary" size="sm" onClick={() => router.push('/merchant/dashboard/settings')}>
                                 <Settings size={16} className="md:mr-2" />
                                 <span className="hidden md:inline">Settings</span>
                             </Button>
