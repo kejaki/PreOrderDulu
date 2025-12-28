@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Headphones, X, Send, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Headphones, X, Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import toast from 'react-hot-toast';
 import { createSupportSession, handleBotResponse, sendUserMessage } from '@/actions/supportBot';
@@ -24,6 +24,7 @@ export function SupportWidget() {
     const [inputText, setInputText] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isSending, setIsSending] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // Initialize session when widget opens
@@ -37,10 +38,8 @@ export function SupportWidget() {
     useEffect(() => {
         if (!sessionId) return;
 
-        // Fetch existing messages
         fetchMessages();
 
-        // Subscribe to realtime updates
         const channel = supabase
             .channel(`support-${sessionId}`)
             .on(
@@ -52,7 +51,13 @@ export function SupportWidget() {
                     filter: `session_id=eq.${sessionId}`
                 },
                 (payload) => {
-                    setMessages((prev) => [...prev, payload.new as Message]);
+                    const newMessage = payload.new as Message;
+                    setMessages((prev) => [...prev, newMessage]);
+
+                    // Increment unread count if widget is closed and message is not from user
+                    if (!isOpen && newMessage.sender_type !== 'user') {
+                        setUnreadCount((prev) => prev + 1);
+                    }
                 }
             )
             .subscribe();
@@ -60,12 +65,19 @@ export function SupportWidget() {
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [sessionId]);
+    }, [sessionId, isOpen]);
 
     // Auto-scroll to bottom
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
+
+    // Reset unread count when opening
+    useEffect(() => {
+        if (isOpen) {
+            setUnreadCount(0);
+        }
+    }, [isOpen]);
 
     const initializeSession = async () => {
         setIsLoading(true);
@@ -90,7 +102,7 @@ export function SupportWidget() {
     const fetchMessages = async () => {
         if (!sessionId) return;
 
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from('support_messages')
             .select('*')
             .eq('session_id', sessionId)
@@ -108,8 +120,6 @@ export function SupportWidget() {
 
         try {
             await sendUserMessage(sessionId, messageContent);
-
-            // Trigger bot response
             await handleBotResponse(sessionId, messageContent);
         } catch (error) {
             console.error('Failed to send message:', error);
@@ -150,14 +160,61 @@ export function SupportWidget() {
     return (
         <>
             {/* Floating Action Button */}
-            <motion.button
-                onClick={() => setIsOpen(!isOpen)}
-                className="fixed bottom-6 right-6 z-50 bg-primary-600 hover:bg-primary-700 text-white rounded-full p-4 shadow-2xl"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+            <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                className="fixed bottom-6 right-6 z-50"
             >
-                {isOpen ? <X size={24} /> : <Headphones size={24} />}
-            </motion.button>
+                <motion.button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="relative h-16 w-16 rounded-full bg-gradient-to-br from-rose-600 to-rose-700 text-white shadow-xl flex items-center justify-center overflow-hidden"
+                    whileHover={{ scale: 1.05, boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.3)' }}
+                    whileTap={{ scale: 0.95 }}
+                >
+                    {/* Icon with cross-fade transition */}
+                    <AnimatePresence mode="wait">
+                        {isOpen ? (
+                            <motion.div
+                                key="close"
+                                initial={{ rotate: -90, opacity: 0 }}
+                                animate={{ rotate: 0, opacity: 1 }}
+                                exit={{ rotate: 90, opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                <X size={28} />
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="headset"
+                                initial={{ rotate: 90, opacity: 0 }}
+                                animate={{ rotate: 0, opacity: 1 }}
+                                exit={{ rotate: -90, opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                <Headphones size={28} />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* Notification Badge */}
+                    <AnimatePresence>
+                        {unreadCount > 0 && !isOpen && (
+                            <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                exit={{ scale: 0 }}
+                                transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                                className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-red-500 border-2 border-white flex items-center justify-center"
+                            >
+                                <span className="text-xs font-bold text-white">
+                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                </span>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </motion.button>
+            </motion.div>
 
             {/* Chat Window */}
             <AnimatePresence>
@@ -166,12 +223,13 @@ export function SupportWidget() {
                         initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                         className="fixed bottom-24 right-6 w-[350px] h-[500px] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col z-40 overflow-hidden"
                     >
                         {/* Header */}
-                        <div className="bg-primary-600 text-white p-4">
+                        <div className="bg-gradient-to-r from-rose-600 to-rose-700 text-white p-4">
                             <h3 className="font-bold text-lg">Customer Support</h3>
-                            <p className="text-xs text-primary-100">Online - Siap membantu Anda</p>
+                            <p className="text-xs text-rose-100">Online - Siap membantu Anda</p>
                         </div>
 
                         {/* Messages */}
@@ -182,7 +240,12 @@ export function SupportWidget() {
                                 </div>
                             ) : (
                                 messages.map((message) => (
-                                    <div key={message.id} className={`flex ${getSenderAlign(message.sender_type)}`}>
+                                    <motion.div
+                                        key={message.id}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className={`flex ${getSenderAlign(message.sender_type)}`}
+                                    >
                                         <div className="max-w-[80%]">
                                             {/* Text Message */}
                                             {message.message_type === 'text' && (
@@ -195,14 +258,16 @@ export function SupportWidget() {
                                             {message.message_type === 'options' && (
                                                 <div className="space-y-2">
                                                     {JSON.parse(message.content).map((option: string) => (
-                                                        <button
+                                                        <motion.button
                                                             key={option}
                                                             onClick={() => handleOptionClick(option)}
                                                             disabled={isSending}
-                                                            className="w-full px-4 py-2 bg-white border-2 border-primary-600 text-primary-600 rounded-full text-sm font-medium hover:bg-primary-50 transition-colors disabled:opacity-50"
+                                                            whileHover={{ scale: 1.02 }}
+                                                            whileTap={{ scale: 0.98 }}
+                                                            className="w-full px-4 py-2 bg-white border-2 border-rose-600 text-rose-600 rounded-full text-sm font-medium hover:bg-rose-50 transition-colors disabled:opacity-50"
                                                         >
                                                             {option}
-                                                        </button>
+                                                        </motion.button>
                                                     ))}
                                                 </div>
                                             )}
@@ -228,7 +293,7 @@ export function SupportWidget() {
                                                 {new Date(message.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                                             </p>
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 ))
                             )}
                             <div ref={messagesEndRef} />
@@ -243,16 +308,18 @@ export function SupportWidget() {
                                     onChange={(e) => setInputText(e.target.value)}
                                     onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                                     placeholder="Ketik pesan..."
-                                    className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                    className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-full focus:outline-none focus:ring-2 focus:ring-rose-500"
                                     disabled={isSending || isLoading}
                                 />
-                                <button
+                                <motion.button
                                     onClick={handleSendMessage}
                                     disabled={!inputText.trim() || isSending || isLoading}
-                                    className="bg-primary-600 hover:bg-primary-700 text-white rounded-full p-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className="bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white rounded-full p-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                 >
                                     {isSending ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} />}
-                                </button>
+                                </motion.button>
                             </div>
                         </div>
                     </motion.div>
