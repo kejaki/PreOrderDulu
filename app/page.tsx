@@ -118,7 +118,6 @@ export default function Home() {
             animate={{ opacity: 1 }}
             className="min-h-screen bg-gray-50 pb-24 font-sans"
         >
-        >
             <AnnouncementBanner />
             <Header />
 
