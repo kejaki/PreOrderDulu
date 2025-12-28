@@ -23,6 +23,7 @@ import {
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { SupportWidget } from '@/components/Support/SupportWidget';
+import { AnnouncementBanner } from '@/components/AnnouncementBanner';
 
 const CATEGORIES = [
     { id: 'all', label: 'Semua', icon: UtensilsCrossed },
