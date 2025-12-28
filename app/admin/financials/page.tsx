@@ -47,11 +47,12 @@ export default function AdminFinancialsPage() {
         const feePercent = feeSettings?.value?.value || 5;
 
         // Get all completed orders
+        // FIX: Use total_amount instead of total_price
         const { data: orders } = await supabase
             .from('orders')
             .select(`
                 id,
-                total_price,
+                total_amount,
                 created_at,
                 status,
                 customer_email,
@@ -63,7 +64,7 @@ export default function AdminFinancialsPage() {
 
         if (orders) {
             // Calculate total revenue and fees
-            const total = orders.reduce((sum, order) => sum + order.total_price, 0);
+            const total = orders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
             const fees = total * (feePercent / 100);
 
             setTotalRevenue(total);
@@ -77,7 +78,7 @@ export default function AdminFinancialsPage() {
                     const orderDate = new Date(order.created_at);
                     return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
                 })
-                .reduce((sum, order) => sum + order.total_price, 0);
+                .reduce((sum, order) => sum + (order.total_amount || 0), 0);
 
             setMonthlyRevenue(monthlyTotal);
 
@@ -94,7 +95,7 @@ export default function AdminFinancialsPage() {
                 );
                 return {
                     date: new Date(date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }),
-                    revenue: dayOrders.reduce((sum, order) => sum + order.total_price, 0),
+                    revenue: dayOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0),
                     orders: dayOrders.length
                 };
             });
@@ -107,8 +108,8 @@ export default function AdminFinancialsPage() {
                 order_id: order.id.substring(0, 8),
                 merchant_name: (order.merchants as any).business_name,
                 customer_email: order.customer_email,
-                amount: order.total_price,
-                platform_fee: order.total_price * (feePercent / 100),
+                amount: order.total_amount || 0,
+                platform_fee: (order.total_amount || 0) * (feePercent / 100),
                 created_at: order.created_at,
                 status: order.status
             }));
