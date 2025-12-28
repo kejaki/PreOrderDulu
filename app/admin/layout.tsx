@@ -1,10 +1,11 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { LayoutDashboard, Store, Users, DollarSign, Headphones, Settings, LogOut } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-import { useRouter } from 'next/navigation';
 
 const navigation = [
     { name: 'Overview', href: '/admin', icon: LayoutDashboard },
@@ -18,11 +19,59 @@ const navigation = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const router = useRouter();
+    const [isAuthorized, setIsAuthorized] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        checkAdminAccess();
+    }, []);
+
+    const checkAdminAccess = async () => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (!user) {
+                router.push('/');
+                return;
+            }
+
+            // Check if user is super admin
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', user.id)
+                .single();
+
+            if (profile?.role !== 'super_admin') {
+                router.push('/403');
+                return;
+            }
+
+            setIsAuthorized(true);
+        } catch (error) {
+            console.error('Admin access check failed:', error);
+            router.push('/');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
         router.push('/');
     };
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+                <p className="text-white">Loading...</p>
+            </div>
+        );
+    }
+
+    if (!isAuthorized) {
+        return null;
+    }
 
     return (
         <div className="min-h-screen bg-slate-900 flex">
