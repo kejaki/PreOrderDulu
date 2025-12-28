@@ -201,8 +201,8 @@ export default function AdminSupportPage() {
                                     key={session.id}
                                     onClick={() => setSelectedSession(session)}
                                     className={`w-full p-4 border-b border-slate-100 text-left transition-colors ${selectedSession?.id === session.id
-                                            ? 'bg-primary-50 border-l-4 border-l-primary-600'
-                                            : 'hover:bg-slate-50'
+                                        ? 'bg-primary-50 border-l-4 border-l-primary-600'
+                                        : 'hover:bg-slate-50'
                                         }`}
                                 >
                                     <div className="flex items-center justify-between mb-2">
@@ -231,7 +231,12 @@ export default function AdminSupportPage() {
                             <div className="bg-white border-b border-slate-200 p-4 flex justify-between items-center">
                                 <div>
                                     <h2 className="font-bold text-slate-900">Session #{selectedSession.id.slice(0, 8)}</h2>
-                                    <p className="text-sm text-slate-500">User ID: {selectedSession.user_id.slice(0, 8)}...</p>
+                                    <p className="text-sm text-slate-500">
+                                        {selectedSession.user_id
+                                            ? `User ID: ${selectedSession.user_id.slice(0, 8)}...`
+                                            : 'Guest User'
+                                        }
+                                    </p>
                                 </div>
                                 <Button
                                     onClick={handleResolve}
