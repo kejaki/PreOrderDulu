@@ -23,6 +23,7 @@ import {
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { SupportWidget } from '@/components/Support/SupportWidget';
+import { AnnouncementBanner } from '@/components/AnnouncementBanner';
 
 const CATEGORIES = [
     { id: 'all', label: 'Semua', icon: UtensilsCrossed },
@@ -117,6 +118,7 @@ export default function Home() {
             animate={{ opacity: 1 }}
             className="min-h-screen bg-gray-50 pb-24 font-sans"
         >
+            <AnnouncementBanner />
             <Header />
 
             <div className="max-w-md mx-auto px-4 pt-6 pb-2">

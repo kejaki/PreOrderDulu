@@ -251,7 +251,7 @@ export function SupportWidget({ hideFloatingButton = false }: SupportWidgetProps
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                        className="fixed bottom-4 right-4 md:bottom-24 md:right-6 w-[calc(100vw-2rem)] md:w-[350px] h-[70vh] md:h-[420px] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col z-[100] overflow-hidden"
+                        className="fixed bottom-4 right-4 md:bottom-24 md:right-6 w-[calc(100vw-2rem)] md:w-[350px] h-[calc(100vh-2rem)] md:h-[500px] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col z-[100] overflow-hidden"
                     >
                         {/* Header */}
                         <div className="bg-gradient-to-r from-rose-600 to-rose-700 text-white p-4 flex justify-between items-center">
