@@ -9,12 +9,13 @@ import toast from 'react-hot-toast';
 
 interface Merchant {
     id: string;
-    business_name: string;
+    merchant_name: string;
     email: string;
     phone: string;
-    address: string;
-    is_active: boolean;
-    is_approved: boolean;
+    address_text: string;
+    is_open: boolean;
+    is_verified: boolean;
+    verification_status: string;
     created_at: string;
 }
 
@@ -37,7 +38,7 @@ export default function AdminMerchantsPage() {
             .order('created_at', { ascending: false });
 
         if (activeTab === 'pending') {
-            query = query.eq('is_approved', false);
+            query = query.eq('is_verified', false);
         }
 
         const { data } = await query;
@@ -49,19 +50,19 @@ export default function AdminMerchantsPage() {
     const handleApprove = async (merchantId: string) => {
         const { error } = await supabase
             .from('merchants')
-            .update({ is_approved: true, is_active: true })
+            .update({ is_verified: true, verification_status: 'approved' })
             .eq('id', merchantId);
 
         if (error) {
             toast.error('Gagal menyetujui merchant');
         } else {
-            toast.success('Merchant disetujui dan diaktifkan');
+            toast.success('Merchant disetujui');
             fetchMerchants();
         }
     };
 
-    const handleReject = async (merchantId: string) => {
-        if (!confirm('Yakin ingin menolak merchant ini?')) return;
+    const handleRejectDelete = async (merchantId: string) => {
+        if (!confirm('Yakin ingin menolak dan menghapus merchant ini?')) return;
 
         const { error } = await supabase
             .from('merchants')
@@ -69,29 +70,30 @@ export default function AdminMerchantsPage() {
             .eq('id', merchantId);
 
         if (error) {
-            toast.error('Gagal menolak merchant');
+            toast.error('Gagal menghapus merchant');
         } else {
-            toast.success('Merchant ditolak dan dihapus');
+            toast.success('Merchant dihapus');
             fetchMerchants();
         }
-    };
+    }
 
-    const handleToggleActive = async (merchant: Merchant) => {
+
+    const handleToggleOpen = async (merchant: Merchant) => {
         const { error } = await supabase
             .from('merchants')
-            .update({ is_active: !merchant.is_active })
+            .update({ is_open: !merchant.is_open })
             .eq('id', merchant.id);
 
         if (error) {
             toast.error('Gagal mengupdate status');
         } else {
-            toast.success(`Toko ${!merchant.is_active ? 'diaktifkan' : 'disuspend'}`);
+            toast.success(`Toko ${!merchant.is_open ? 'dibuka' : 'ditutup'}`);
             fetchMerchants();
         }
     };
 
     const filteredMerchants = merchants.filter(m =>
-        (m.business_name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+        (m.merchant_name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
         (m.email?.toLowerCase() || '').includes(searchQuery.toLowerCase())
     );
 
@@ -178,7 +180,7 @@ export default function AdminMerchantsPage() {
                             filteredMerchants.map((merchant) => (
                                 <tr key={merchant.id} className="hover:bg-slate-700/50 transition-colors">
                                     <td className="px-6 py-4">
-                                        <div className="text-sm font-medium text-white">{merchant.business_name}</div>
+                                        <div className="text-sm font-medium text-white">{merchant.merchant_name}</div>
                                         <div className="text-xs text-slate-400">
                                             Registered: {new Date(merchant.created_at).toLocaleDateString('id-ID')}
                                         </div>
@@ -188,41 +190,39 @@ export default function AdminMerchantsPage() {
                                         <div className="text-xs text-slate-400">{merchant.phone}</div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="text-sm text-slate-300 max-w-xs truncate">{merchant.address}</div>
+                                        <div className="text-sm text-slate-300 max-w-xs truncate">{merchant.address_text}</div>
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col gap-1">
-                                            <Badge variant={merchant.is_approved ? 'success' : 'warning'}>
-                                                {merchant.is_approved ? 'Approved' : 'Pending'}
+                                            <Badge variant={merchant.is_verified ? 'success' : 'warning'}>
+                                                {merchant.is_verified ? 'Verified' : 'Unverified'}
                                             </Badge>
-                                            {merchant.is_approved && (
-                                                <Badge variant={merchant.is_active ? 'success' : 'danger'}>
-                                                    {merchant.is_active ? 'Active' : 'Suspended'}
-                                                </Badge>
-                                            )}
+                                            <Badge variant={merchant.is_open ? 'success' : 'secondary'}>
+                                                {merchant.is_open ? 'Open' : 'Closed'}
+                                            </Badge>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex gap-2">
-                                            {!merchant.is_approved ? (
+                                            {!merchant.is_verified ? (
                                                 <>
                                                     <Button onClick={() => handleApprove(merchant.id)} size="sm" variant="primary">
                                                         <CheckCircle size={14} className="mr-1" />
-                                                        Approve
+                                                        Verify
                                                     </Button>
-                                                    <Button onClick={() => handleReject(merchant.id)} size="sm" variant="danger">
+                                                    <Button onClick={() => handleRejectDelete(merchant.id)} size="sm" variant="danger">
                                                         <XCircle size={14} className="mr-1" />
                                                         Reject
                                                     </Button>
                                                 </>
                                             ) : (
                                                 <Button
-                                                    onClick={() => handleToggleActive(merchant)}
+                                                    onClick={() => handleToggleOpen(merchant)}
                                                     size="sm"
-                                                    variant={merchant.is_active ? 'danger' : 'primary'}
+                                                    variant={merchant.is_open ? 'danger' : 'primary'}
                                                 >
                                                     <Ban size={14} className="mr-1" />
-                                                    {merchant.is_active ? 'Suspend' : 'Activate'}
+                                                    {merchant.is_open ? 'Force Close' : 'Force Open'}
                                                 </Button>
                                             )}
                                         </div>
