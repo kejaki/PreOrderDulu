@@ -457,8 +457,9 @@ export default function MenuManagementPage() {
                                         {formData.images.length < 5 && (
                                             <ImageUpload
                                                 bucket="merchants"
-                                                onUploadSuccess={handleAddImage}
-                                                currentImage=""
+                                                value=""
+                                                onChange={handleAddImage}
+                                                label="Add Photo"
                                             />
                                         )}
                                     </div>
